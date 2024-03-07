@@ -1,0 +1,25 @@
+{
+  "name": "@upop/solid",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@upop/core": "workspace:*"
+  },
+  "devDependencies": {
+    "solid-js": "^1.8.15",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.4",
+    "vite-plugin-dts": "^3.7.3",
+    "vite-plugin-solid": "^2.10.1"
+  },
+  "peerDependencies": {
+    "solid-js": "1.x"
+  }
+}
