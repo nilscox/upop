@@ -1,5 +1,11 @@
 {
   "name": "upop",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.2"
+  }
 }

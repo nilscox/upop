@@ -59,7 +59,6 @@ export function Select() {
                 'bg-blue-300': select.highlightedIndex === index,
                 'font-bold': unwrap(select.selectedItem) === item,
               }}
-              key={item.id}
               {...select.getItemProps({ item, index })}
             >
               <span>{item.title}</span>

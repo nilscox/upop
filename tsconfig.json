@@ -1,15 +1,12 @@
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "isolatedModules": true,
-    "noEmit": true,
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "forceConsistentCasingInFileNames": true
-  }
+  "files": [],
+  "references": [
+    { "path": "packages/upop-core" },
+    { "path": "packages/upop-react" },
+    { "path": "packages/upop-react/example" },
+    { "path": "packages/upop-solid" },
+    { "path": "packages/upop-solid/example" },
+    { "path": "packages/upop-vue" },
+    { "path": "packages/upop-vue/example" }
+  ]
 }
