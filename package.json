@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "lint": "pnpm run -r lint"
   },
   "devDependencies": {
     "typescript": "^5.4.2"
