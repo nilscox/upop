@@ -8,3 +8,14 @@ body {
   background: rgb(246, 247, 248);
   padding: 32px;
 }
+
+header {
+  margin: 8px 0;
+  font-weight: 600;
+}
+
+button {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 8px;
+}

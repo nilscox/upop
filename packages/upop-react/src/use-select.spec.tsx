@@ -1,11 +1,19 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as downshift from 'downshift';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as upop from './use-select';
 
-type UseSelect = upop.UseSelect | typeof downshift.useSelect;
+type TestItem = {
+  id: string;
+  name: string;
+};
+
+type UseSelect =
+  | upop.UseSelect<TestItem>
+  | typeof downshift.useSelect<TestItem>;
+
 screen;
 
 describe('useSelect', () => {
@@ -30,54 +38,35 @@ describe('useSelect', () => {
     describe(`menu item - ${library}`, () => {
       menuItem(useSelect);
     });
+
+    describe(`controlled props - ${library}`, () => {
+      controlledProps(useSelect);
+    });
   }
 });
 
-const items = [
+const items: TestItem[] = [
   { id: '1', name: 'one' },
   { id: '2', name: 'two' },
 ];
 
-function Select({ useSelect }: { useSelect: UseSelect }) {
-  const {
-    isOpen,
-    selectedItem,
-    getToggleButtonProps,
-    getLabelProps,
-    getMenuProps,
-    highlightedIndex,
-    getItemProps,
-  } = useSelect({
-    items,
-    id: 'select',
-  });
-
-  return (
-    <>
-      <label {...getLabelProps()} />
-
-      <div {...getToggleButtonProps()} />
-
-      <ul {...getMenuProps()}>
-        {items.map((item, index) => (
-          <li key={item.id} {...getItemProps({ item, index })} />
-        ))}
-      </ul>
-
-      <div id="is-open" data-value={isOpen} />
-      <div id="selected-item" data-value={selectedItem?.id ?? 'null'} />
-      <div id="highlighted-index" data-value={highlightedIndex} />
-    </>
-  );
-}
-
 class Test {
   user: ReturnType<typeof userEvent.setup>;
 
-  constructor(useSelect: UseSelect) {
-    this.user = userEvent.setup();
+  props: Parameters<UseSelect>[0];
 
-    render(<Select useSelect={useSelect} />);
+  rerender: () => void;
+
+  constructor(
+    private useSelect: UseSelect,
+    props?: Partial<Parameters<UseSelect>[0]>,
+  ) {
+    this.user = userEvent.setup();
+    this.props = { items, id: 'select', ...props };
+
+    const result = render(<this.Select />);
+
+    this.rerender = () => result.rerender(<this.Select />);
   }
 
   get toggleButton() {
@@ -98,23 +87,51 @@ class Test {
 
   expectState(state: {
     isOpen?: boolean;
-    selectedItem?: string | null;
+    selectedItem?: TestItem | null;
     highlightedIndex?: number;
   }) {
-    expect(this.getDataValue('is-open')).toEqual(String(state.isOpen ?? false));
-
-    expect(this.getDataValue('selected-item')).toEqual(
-      String(state.selectedItem ?? null),
-    );
-
-    expect(this.getDataValue('highlighted-index')).toEqual(
-      String(state.highlightedIndex ?? -1),
-    );
+    expect(this.state).toEqual({
+      isOpen: false,
+      selectedItem: null,
+      highlightedIndex: -1,
+      ...state,
+    });
   }
 
-  private getDataValue(id: string) {
-    return document.getElementById(id)?.getAttribute('data-value');
+  focusToggleButton() {
+    act(() => this.toggleButton.focus());
   }
+
+  private state!: {
+    isOpen: boolean;
+    selectedItem: TestItem | null;
+    highlightedIndex: number;
+  };
+
+  private Select = () => {
+    // @ts-expect-error upop and downshift don't have the exact same api
+    const result = this.useSelect(this.props);
+
+    this.state = {
+      isOpen: result.isOpen,
+      selectedItem: result.selectedItem,
+      highlightedIndex: result.highlightedIndex,
+    };
+
+    return (
+      <>
+        <label {...result.getLabelProps()} />
+
+        <div {...result.getToggleButtonProps()} />
+
+        <ul {...result.getMenuProps()}>
+          {this.props.items.map((item, index) => (
+            <li key={item.id} {...result.getItemProps({ item, index })} />
+          ))}
+        </ul>
+      </>
+    );
+  };
 }
 
 function toggleButton(useSelect: UseSelect) {
@@ -124,9 +141,7 @@ function toggleButton(useSelect: UseSelect) {
   beforeEach(() => {
     test = new Test(useSelect);
     toggleButton = test.toggleButton;
-    act(() => {
-      toggleButton.focus();
-    });
+    test.focusToggleButton();
   });
 
   it('toggles the popup on click', async () => {
@@ -158,7 +173,7 @@ function toggleButton(useSelect: UseSelect) {
   it('selects the highlighted item with the enter key', async () => {
     await act(() => test.user.keyboard('{ArrowDown}'));
     await act(() => test.user.keyboard('{Enter}'));
-    test.expectState({ isOpen: false, selectedItem: '1' });
+    test.expectState({ isOpen: false, selectedItem: items[0] });
   });
 
   it('toggles the popup with the space key', async () => {
@@ -172,7 +187,7 @@ function toggleButton(useSelect: UseSelect) {
   it('selects the highlighted item with the space key', async () => {
     await act(() => test.user.keyboard('{ArrowDown}'));
     await act(() => test.user.keyboard(' '));
-    test.expectState({ isOpen: false, selectedItem: '1' });
+    test.expectState({ isOpen: false, selectedItem: items[0] });
   });
 
   it('closes the popup with the escape key', async () => {
@@ -206,7 +221,7 @@ function toggleButton(useSelect: UseSelect) {
   it('selects the highlighted item on blur when none is selected', async () => {
     await act(async () => test.user.keyboard('{ArrowDown}'));
     await act(async () => test.user.tab());
-    test.expectState({ isOpen: false, selectedItem: '1' });
+    test.expectState({ isOpen: false, selectedItem: items[0] });
   });
 
   it('keeps the selected item on blur', async () => {
@@ -214,7 +229,7 @@ function toggleButton(useSelect: UseSelect) {
     await act(async () => test.user.keyboard('{Enter}'));
     await act(async () => test.user.keyboard('{Enter}'));
     await act(async () => test.user.tab());
-    test.expectState({ isOpen: false, selectedItem: '1' });
+    test.expectState({ isOpen: false, selectedItem: items[0] });
   });
 
   describe('accessibility', () => {
@@ -229,10 +244,8 @@ function toggleButton(useSelect: UseSelect) {
     it('aria-activedescendant', async () => {
       expect(toggleButton).toHaveAttribute('aria-activedescendant', '');
 
-      await act(async () => {
-        toggleButton.focus();
-        await test.user.keyboard('{ArrowDown}');
-      });
+      test.focusToggleButton();
+      await act(() => test.user.keyboard('{ArrowDown}'));
 
       expect(toggleButton).toHaveAttribute(
         'aria-activedescendant',
@@ -288,8 +301,9 @@ function menu(useSelect: UseSelect) {
   });
 
   it('clears the highlighted item on mouse out', async () => {
+    test.focusToggleButton();
+
     await act(async () => {
-      test.toggleButton.focus();
       await test.user.keyboard('{ArrowDown}');
 
       await test.user.pointer([
@@ -322,7 +336,7 @@ function menuItem(useSelect: UseSelect) {
     menuItem1 = test.menuItem(0);
     menuItem2 = test.menuItem(1);
 
-    act(() => test.toggleButton.focus());
+    test.focusToggleButton();
     await act(() => test.user.keyboard('{Enter}'));
   });
 
@@ -336,7 +350,7 @@ function menuItem(useSelect: UseSelect) {
       test.user.pointer({ target: menuItem1, keys: '[MouseLeft]' }),
     );
 
-    test.expectState({ isOpen: false, selectedItem: '1' });
+    test.expectState({ isOpen: false, selectedItem: items[0] });
   });
 
   describe('accessibility', () => {
@@ -355,6 +369,102 @@ function menuItem(useSelect: UseSelect) {
 
       expect(menuItem1).toHaveAttribute('aria-selected', 'true');
       expect(menuItem2).toHaveAttribute('aria-selected', 'false');
+    });
+  });
+}
+
+function controlledProps(useSelect: UseSelect) {
+  describe('controlled state', () => {
+    it('controls the open state', () => {
+      const test = new Test(useSelect, {
+        isOpen: true,
+      });
+
+      test.expectState({ isOpen: true });
+
+      test.props.isOpen = false;
+      test.rerender();
+
+      test.expectState({ isOpen: false });
+    });
+
+    it('controls the selected item', () => {
+      const test = new Test(useSelect, {
+        selectedItem: items[0],
+      });
+
+      test.expectState({ selectedItem: items[0] });
+
+      test.props.selectedItem = null;
+      test.rerender();
+
+      test.expectState({ selectedItem: null });
+    });
+
+    it("controls the highlighted item's index", () => {
+      const test = new Test(useSelect, {
+        highlightedIndex: 0,
+      });
+
+      test.expectState({ highlightedIndex: 0 });
+
+      test.props.highlightedIndex = -1;
+      test.rerender();
+
+      test.expectState({ highlightedIndex: -1 });
+    });
+  });
+
+  describe('controlled side effects', () => {
+    let test: Test;
+
+    let onIsOpenChange: Mock;
+    let onSelectedItemChange: Mock;
+    let onHighlightedIndexChange: Mock;
+
+    beforeEach(() => {
+      onIsOpenChange = vi.fn();
+      onSelectedItemChange = vi.fn();
+      onHighlightedIndexChange = vi.fn();
+
+      test = new Test(useSelect, {
+        onIsOpenChange,
+        onSelectedItemChange,
+        onHighlightedIndexChange,
+      });
+    });
+
+    it('onIsOpenChange', async () => {
+      await act(() => test.user.click(test.toggleButton));
+      expect(onIsOpenChange).toHaveBeenCalledWith(
+        expect.objectContaining({ isOpen: true }),
+      );
+
+      await act(() => test.user.click(test.toggleButton));
+      expect(onIsOpenChange).toHaveBeenCalledWith(
+        expect.objectContaining({ isOpen: false }),
+      );
+    });
+
+    it('onSelectedItemChange', async () => {
+      await act(() => test.user.click(test.toggleButton));
+      await act(() => test.user.click(test.menuItem(0)));
+      expect(onSelectedItemChange).toHaveBeenCalledWith(
+        expect.objectContaining({ selectedItem: items[0] }),
+      );
+    });
+
+    it('onHighlightedIndexChange', async () => {
+      test.focusToggleButton();
+      await act(() => test.user.keyboard('[ArrowDown]'));
+      expect(onHighlightedIndexChange).toHaveBeenCalledWith(
+        expect.objectContaining({ highlightedIndex: 0 }),
+      );
+    });
+
+    it('does not call a side effect when it does not change', async () => {
+      await act(() => test.user.click(test.toggleButton));
+      expect(onSelectedItemChange).not.toHaveBeenCalled();
     });
   });
 }

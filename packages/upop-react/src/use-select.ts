@@ -1,13 +1,17 @@
 import {
+  SelectState,
   createSelectReducer,
   getItemAttributes,
   getLabelAttributes,
   getMenuAttributes,
   getToggleButtonAttributes,
+  highlightedIndexChanged,
+  isOpenChanged,
   itemClick,
   itemMouseMove,
   menuMouseOut,
   selectInitialState,
+  selectedItemChanged,
   toggleButtonBlur,
   toggleButtonClick,
   toggleButtonKeyDown,
@@ -15,21 +19,41 @@ import {
 import { useCallback, useReducer } from 'react';
 
 import { useId } from './use-id';
+import { useUpdateEffect } from './use-update-effect';
 
 type SelectOptions<Item> = {
   items: Item[];
   id?: string;
   itemToString?: (item: Item | null) => string;
+  isOpen?: boolean;
+  onIsOpenChange?: (state: SelectState<Item>) => void;
+  selectedItem?: Item | null;
+  onSelectedItemChange?: (state: SelectState<Item>) => void;
+  highlightedIndex?: number;
+  onHighlightedIndexChange?: (state: SelectState<Item>) => void;
 };
 
-export type UseSelect = typeof useSelect;
+export type UseSelect<Item> = typeof useSelect<Item>;
 
 export function useSelect<Item>(options: SelectOptions<Item>) {
-  const { items } = options;
+  const {
+    items,
+    isOpen,
+    onIsOpenChange,
+    selectedItem,
+    onSelectedItemChange,
+    highlightedIndex,
+    onHighlightedIndexChange,
+  } = options;
+
   const id = useId(options.id);
 
   const reducer = useCallback(createSelectReducer(items), [items]);
-  const [state, dispatch] = useReducer(reducer, selectInitialState<Item>());
+
+  const [state, dispatch] = useReducer(
+    reducer,
+    selectInitialState<Item>(options),
+  );
 
   const getLabelProps = useCallback(() => {
     return getLabelAttributes(id);
@@ -62,6 +86,36 @@ export function useSelect<Item>(options: SelectOptions<Item>) {
     },
     [id, state, dispatch],
   );
+
+  useUpdateEffect(() => {
+    if (isOpen !== undefined) {
+      dispatch(isOpenChanged(isOpen));
+    }
+  }, [isOpen]);
+
+  useUpdateEffect(() => {
+    onIsOpenChange?.(state);
+  }, [state.isOpen]);
+
+  useUpdateEffect(() => {
+    if (selectedItem !== undefined) {
+      dispatch(selectedItemChanged(selectedItem));
+    }
+  }, [selectedItem]);
+
+  useUpdateEffect(() => {
+    onSelectedItemChange?.(state);
+  }, [state.selectedItem]);
+
+  useUpdateEffect(() => {
+    if (highlightedIndex !== undefined) {
+      dispatch(highlightedIndexChanged(highlightedIndex));
+    }
+  }, [highlightedIndex]);
+
+  useUpdateEffect(() => {
+    onHighlightedIndexChange?.(state);
+  }, [state.highlightedIndex]);
 
   return {
     ...state,

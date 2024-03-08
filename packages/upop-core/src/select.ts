@@ -7,6 +7,9 @@ export type SelectState<Item> = {
 };
 
 type SelectAction = ReturnType<
+  | typeof isOpenChanged
+  | typeof selectedItemChanged
+  | typeof highlightedIndexChanged
   | typeof toggleButtonClick
   | typeof toggleButtonKeyDown
   | typeof toggleButtonBlur
@@ -17,11 +20,14 @@ type SelectAction = ReturnType<
 
 export type SelectDispatch = (action: SelectAction) => void;
 
-export function selectInitialState<Item>(): SelectState<Item> {
+export function selectInitialState<Item>(
+  state: Partial<SelectState<Item>>,
+): SelectState<Item> {
   return {
     isOpen: false,
     highlightedIndex: -1,
     selectedItem: null,
+    ...state,
   };
 }
 
@@ -89,9 +95,38 @@ export function createSelectReducer<Item>(items: Item[]) {
       next.highlightedIndex = -1;
     }
 
+    if (action.type === 'is-open-changed') {
+      next.isOpen = action.isOpen;
+    }
+
+    if (action.type === 'selected-item-changed') {
+      next.selectedItem = action.item as Item | null;
+    }
+
+    if (action.type === 'highlighted-index-changed') {
+      next.highlightedIndex = action.index;
+    }
+
     return next;
   };
 }
+
+export const isOpenChanged = createAction(
+  'is-open-changed',
+  (isOpen: boolean) => ({
+    isOpen,
+  }),
+);
+
+export const selectedItemChanged = createAction(
+  'selected-item-changed',
+  <Item>(item: Item | null) => ({ item }),
+);
+
+export const highlightedIndexChanged = createAction(
+  'highlighted-index-changed',
+  (index: number) => ({ index }),
+);
 
 export type LabelAttributes = {
   id: string;
