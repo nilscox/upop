@@ -1,10 +1,17 @@
 import {
   SelectDispatch,
-  SelectGetters,
-  SelectState,
-  createSelectGetters,
   createSelectReducer,
+  getItemAttributes,
+  getLabelAttributes,
+  getMenuAttributes,
+  getToggleButtonAttributes,
+  itemClick,
+  itemMouseMove,
+  menuMouseOut,
   selectInitialState,
+  toggleButtonBlur,
+  toggleButtonClick,
+  toggleButtonKeyDown,
 } from '@upop/core';
 import { createUniqueId, mergeProps } from 'solid-js';
 import { createStore } from 'solid-js/store';
@@ -15,13 +22,9 @@ type SelectOptions<Item> = {
   itemToString?: (item: Item | null) => string;
 };
 
-type SelectResult<Item> = SelectState<Item> & SelectGetters<Item>;
-
 export type CreateSelect = typeof createSelect;
 
-export function createSelect<Item>(
-  options: SelectOptions<Item>,
-): SelectResult<Item> {
+export function createSelect<Item>(options: SelectOptions<Item>) {
   const { items } = options;
   const id = options.id ?? createUniqueId();
 
@@ -32,7 +35,38 @@ export function createSelect<Item>(
     setState(reducer(state, action));
   };
 
-  const getters = createSelectGetters(id, items, state, dispatch);
+  const getLabelProps = () => {
+    return getLabelAttributes(id);
+  };
 
-  return mergeProps(state, getters);
+  const getToggleButtonProps = () => {
+    return {
+      ...getToggleButtonAttributes(id, state),
+      onClick: () => dispatch(toggleButtonClick()),
+      onKeyDown: ({ key }: KeyboardEvent) => dispatch(toggleButtonKeyDown(key)),
+      onBlur: () => dispatch(toggleButtonBlur()),
+    };
+  };
+
+  const getMenuProps = () => {
+    return {
+      ...getMenuAttributes(id),
+      onMouseOut: () => dispatch(menuMouseOut()),
+    };
+  };
+
+  const getItemProps = ({ index }: { item: Item; index: number }) => {
+    return {
+      ...getItemAttributes(id, index, items, state),
+      onClick: () => dispatch(itemClick(index)),
+      onMouseMove: () => dispatch(itemMouseMove(index)),
+    };
+  };
+
+  return mergeProps(state, {
+    getLabelProps,
+    getToggleButtonProps,
+    getMenuProps,
+    getItemProps,
+  });
 }

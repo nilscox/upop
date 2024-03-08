@@ -1,50 +1,19 @@
+import { createAction } from './create-action';
+
 export type SelectState<Item> = {
   isOpen: boolean;
   highlightedIndex: number;
   selectedItem: Item | null;
 };
 
-export type SelectGetters<Item> = {
-  getLabelProps: GetLabelProps;
-  getToggleButtonProps: GetToggleButtonProps;
-  getMenuProps: GetMenuProps;
-  getItemProps: GetItemProps<Item>;
-};
-
-type ToggleButtonClick = {
-  type: 'toggle-button-click';
-};
-
-type ToggleButtonKeyDown = {
-  type: 'toggle-button-key-down';
-  key: string;
-};
-
-type ToggleButtonBlur = {
-  type: 'toggle-button-blur';
-};
-
-type MenuMouseOut = {
-  type: 'menu-mouse-out';
-};
-
-type ItemClick = {
-  type: 'item-click';
-  index: number;
-};
-
-type ItemMouseMove = {
-  type: 'item-mouse-move';
-  index: number;
-};
-
-type SelectAction =
-  | ToggleButtonClick
-  | ToggleButtonKeyDown
-  | ToggleButtonBlur
-  | MenuMouseOut
-  | ItemClick
-  | ItemMouseMove;
+type SelectAction = ReturnType<
+  | typeof toggleButtonClick
+  | typeof toggleButtonKeyDown
+  | typeof toggleButtonBlur
+  | typeof menuMouseOut
+  | typeof itemClick
+  | typeof itemMouseMove
+>;
 
 export type SelectDispatch = (action: SelectAction) => void;
 
@@ -116,7 +85,7 @@ export function createSelectReducer<Item>(items: Item[]) {
       next.selectedItem = items[action.index] ?? null;
     }
 
-    if (next.isOpen === false) {
+    if (!next.isOpen) {
       next.highlightedIndex = -1;
     }
 
@@ -124,45 +93,19 @@ export function createSelectReducer<Item>(items: Item[]) {
   };
 }
 
-export function createSelectGetters<Item>(
-  id: string,
-  items: Item[],
-  state: SelectState<Item>,
-  dispatch: SelectDispatch,
-): SelectGetters<Item> {
-  return {
-    getLabelProps: () => {
-      return getLabelProps(id);
-    },
-    getToggleButtonProps: () => {
-      return getToggleButtonProps(id, state, dispatch);
-    },
-    getMenuProps: () => {
-      return getMenuProps(id, dispatch);
-    },
-    getItemProps: ({ index }) => {
-      return getItemProps(id, index, items, state, dispatch);
-    },
-  };
-}
-
-export type GetLabelProps = () => LabelProps;
-
-export type LabelProps = {
+export type LabelAttributes = {
   id: string;
   htmlFor: string;
 };
 
-function getLabelProps(id: string): LabelProps {
+export function getLabelAttributes(id: string): LabelAttributes {
   return {
     id: `${id}-label`,
     htmlFor: `${id}-toggle-button`,
   };
 }
 
-export type GetToggleButtonProps = () => ToggleButtonProps;
-
-export type ToggleButtonProps = {
+export type ToggleButtonAttributes = {
   role: 'combobox';
   tabIndex: 0;
   id: string;
@@ -171,16 +114,12 @@ export type ToggleButtonProps = {
   'aria-expanded': boolean;
   'aria-haspopup': 'listbox';
   'aria-labelledby': string;
-  onClick: () => void;
-  onKeyDown: (event: { key: string }) => void;
-  onBlur: () => void;
 };
 
-function getToggleButtonProps<Item>(
+export function getToggleButtonAttributes<Item>(
   id: string,
   state: SelectState<Item>,
-  dispatch: SelectDispatch,
-): ToggleButtonProps {
+): ToggleButtonAttributes {
   const { isOpen, highlightedIndex } = state;
 
   return {
@@ -193,69 +132,62 @@ function getToggleButtonProps<Item>(
     'aria-expanded': isOpen,
     'aria-haspopup': 'listbox',
     'aria-labelledby': `${id}-label`,
-    onClick: () => {
-      dispatch({ type: 'toggle-button-click' });
-    },
-    onKeyDown: ({ key }) => {
-      dispatch({ type: 'toggle-button-key-down', key });
-    },
-    onBlur: () => {
-      dispatch({ type: 'toggle-button-blur' });
-    },
   };
 }
 
-export type GetMenuProps = () => MenuProps;
+export const toggleButtonClick = createAction('toggle-button-click');
 
-export type MenuProps = {
+export const toggleButtonKeyDown = createAction(
+  'toggle-button-key-down',
+  (key: string) => ({ key }),
+);
+
+export const toggleButtonBlur = createAction('toggle-button-blur');
+
+export type MenuAttributes = {
   id: string;
   role: 'listbox';
   'aria-labelledby': string;
-  onMouseOut: () => void;
 };
 
-function getMenuProps(id: string, dispatch: SelectDispatch): MenuProps {
+export function getMenuAttributes(id: string): MenuAttributes {
   return {
     id: `${id}-menu`,
     role: 'listbox',
     'aria-labelledby': `${id}-label`,
-    onMouseOut: () => {
-      dispatch({ type: 'menu-mouse-out' });
-    },
   };
 }
 
-export type GetItemProps<Item> = (param: {
-  item: Item;
-  index: number;
-}) => ItemProps;
+export const menuMouseOut = createAction('menu-mouse-out');
 
-export type ItemProps = {
+export type ItemAttributes = {
   id: string;
   role: 'option';
   'aria-disabled': boolean;
   'aria-selected': boolean;
-  onClick: () => void;
-  onMouseMove: () => void;
 };
 
-function getItemProps<Item>(
+export function getItemAttributes<Item>(
   id: string,
   index: number,
   items: Item[],
   state: SelectState<Item>,
-  dispatch: SelectDispatch,
-): ItemProps {
+): ItemAttributes {
   return {
     id: `${id}-item-${index}`,
     role: 'option',
     'aria-disabled': false,
     'aria-selected': index === items.indexOf(state.selectedItem as Item),
-    onClick: () => {
-      dispatch({ type: 'item-click', index });
-    },
-    onMouseMove: () => {
-      dispatch({ type: 'item-mouse-move', index });
-    },
   };
 }
+
+export const itemClick = createAction('item-click', (index: number) => ({
+  index,
+}));
+
+export const itemMouseMove = createAction(
+  'item-mouse-move',
+  (index: number) => ({
+    index,
+  }),
+);
