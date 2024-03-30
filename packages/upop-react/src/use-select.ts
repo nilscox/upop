@@ -1,10 +1,12 @@
 import {
+  SelectAction,
   SelectState,
   createSelectReducer,
   getItemAttributes,
   getLabelAttributes,
   getMenuAttributes,
   getToggleButtonAttributes,
+  handleSelectSideEffects,
   highlightedIndexChanged,
   isOpenChanged,
   itemClick,
@@ -16,12 +18,13 @@ import {
   toggleButtonClick,
   toggleButtonKeyDown,
 } from '@upop/core';
-import { useCallback, useReducer } from 'react';
+import { useCallback, useState } from 'react';
 
+import { useControlProp } from './use-control-prop';
 import { useId } from './use-id';
-import { useUpdateEffect } from './use-update-effect';
+import { useRefs } from './use-refs';
 
-type SelectOptions<Item> = {
+type SelectProps<Item> = {
   items: Item[];
   id?: string;
   itemToString?: (item: Item | null) => string;
@@ -35,25 +38,42 @@ type SelectOptions<Item> = {
 
 export type UseSelect<Item> = typeof useSelect<Item>;
 
-export function useSelect<Item>(options: SelectOptions<Item>) {
-  const {
-    items,
-    isOpen,
-    onIsOpenChange,
-    selectedItem,
-    onSelectedItemChange,
-    highlightedIndex,
-    onHighlightedIndexChange,
-  } = options;
+export function useSelect<Item>(props: SelectProps<Item>) {
+  const { items, isOpen, selectedItem, highlightedIndex } = props;
 
-  const id = useId(options.id);
+  const id = useId(props.id);
+  const [itemElements, captureItemElement] = useRefs<Item>();
 
   const reducer = useCallback(createSelectReducer(items), [items]);
 
-  const [state, dispatch] = useReducer(
-    reducer,
-    selectInitialState<Item>(options),
-  );
+  const [state, setState] = useState(selectInitialState<Item>(props));
+
+  const dispatch = (action: SelectAction) => {
+    const prevState = state;
+    const nextState = reducer(state, action);
+
+    setState(nextState);
+
+    handleSelectSideEffects(prevState, nextState, action, {
+      items,
+      itemElements,
+      onIsOpenChange: props.onIsOpenChange,
+      onSelectedItemChange: props.onSelectedItemChange,
+      onHighlightedIndexChange: props.onHighlightedIndexChange,
+    });
+  };
+
+  useControlProp(isOpen, (value) => {
+    dispatch(isOpenChanged(value));
+  });
+
+  useControlProp(selectedItem, (value) => {
+    dispatch(selectedItemChanged(value));
+  });
+
+  useControlProp(highlightedIndex, (value) => {
+    dispatch(highlightedIndexChanged(value));
+  });
 
   const getLabelProps = useCallback(() => {
     return getLabelAttributes(id);
@@ -72,50 +92,21 @@ export function useSelect<Item>(options: SelectOptions<Item>) {
   const getMenuProps = useCallback(() => {
     return {
       ...getMenuAttributes(id),
-      onMouseOut: () => dispatch(menuMouseOut()),
+      onMouseLeave: () => dispatch(menuMouseOut()),
     };
   }, [id, dispatch]);
 
   const getItemProps = useCallback(
-    ({ index }: { item: Item; index: number }) => {
+    ({ item, index }: { item: Item; index: number }) => {
       return {
         ...getItemAttributes(id, index, items, state),
+        ref: captureItemElement.bind(null, item),
         onClick: () => dispatch(itemClick(index)),
         onMouseMove: () => dispatch(itemMouseMove(index)),
       };
     },
     [id, state, dispatch],
   );
-
-  useUpdateEffect(() => {
-    if (isOpen !== undefined) {
-      dispatch(isOpenChanged(isOpen));
-    }
-  }, [isOpen]);
-
-  useUpdateEffect(() => {
-    onIsOpenChange?.(state);
-  }, [state.isOpen]);
-
-  useUpdateEffect(() => {
-    if (selectedItem !== undefined) {
-      dispatch(selectedItemChanged(selectedItem));
-    }
-  }, [selectedItem]);
-
-  useUpdateEffect(() => {
-    onSelectedItemChange?.(state);
-  }, [state.selectedItem]);
-
-  useUpdateEffect(() => {
-    if (highlightedIndex !== undefined) {
-      dispatch(highlightedIndexChanged(highlightedIndex));
-    }
-  }, [highlightedIndex]);
-
-  useUpdateEffect(() => {
-    onHighlightedIndexChange?.(state);
-  }, [state.highlightedIndex]);
 
   return {
     ...state,

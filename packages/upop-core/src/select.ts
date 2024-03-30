@@ -1,4 +1,5 @@
 import { createAction } from './create-action';
+import { removeUndefined } from './remove-undefined';
 
 export type SelectState<Item> = {
   isOpen: boolean;
@@ -6,14 +7,14 @@ export type SelectState<Item> = {
   selectedItem: Item | null;
 };
 
-type SelectAction = ReturnType<
+export type SelectAction = ReturnType<
   | typeof isOpenChanged
   | typeof selectedItemChanged
   | typeof highlightedIndexChanged
   | typeof toggleButtonClick
   | typeof toggleButtonKeyDown
   | typeof toggleButtonBlur
-  | typeof menuMouseOut
+  | typeof menuMouseLeave
   | typeof itemClick
   | typeof itemMouseMove
 >;
@@ -27,7 +28,7 @@ export function selectInitialState<Item>(
     isOpen: false,
     highlightedIndex: -1,
     selectedItem: null,
-    ...state,
+    ...removeUndefined(state),
   };
 }
 
@@ -113,9 +114,7 @@ export function createSelectReducer<Item>(items: Item[]) {
 
 export const isOpenChanged = createAction(
   'is-open-changed',
-  (isOpen: boolean) => ({
-    isOpen,
-  }),
+  (isOpen: boolean) => ({ isOpen }),
 );
 
 export const selectedItemChanged = createAction(
@@ -193,7 +192,7 @@ export function getMenuAttributes(id: string): MenuAttributes {
   };
 }
 
-export const menuMouseOut = createAction('menu-mouse-out');
+export const menuMouseLeave = createAction('menu-mouse-leave');
 
 export type ItemAttributes = {
   id: string;
@@ -226,3 +225,42 @@ export const itemMouseMove = createAction(
     index,
   }),
 );
+
+type SelectSideEffectProps<Item> = {
+  items: Item[];
+  itemElements: Map<Item, HTMLElement>;
+  onIsOpenChange?: (state: SelectState<Item>) => void;
+  onSelectedItemChange?: (state: SelectState<Item>) => void;
+  onHighlightedIndexChange?: (state: SelectState<Item>) => void;
+};
+
+export function handleSelectSideEffects<Item>(
+  prevState: SelectState<Item>,
+  state: SelectState<Item>,
+  action: SelectAction,
+  props: SelectSideEffectProps<Item>,
+) {
+  if (prevState.isOpen !== state.isOpen) {
+    props.onIsOpenChange?.(state);
+  }
+
+  if (prevState.selectedItem !== state.selectedItem) {
+    props.onSelectedItemChange?.(state);
+  }
+
+  if (prevState.highlightedIndex !== state.highlightedIndex) {
+    props.onHighlightedIndexChange?.(state);
+  }
+
+  if (
+    action.type === 'toggle-button-key-down' &&
+    prevState.highlightedIndex !== state.highlightedIndex
+  ) {
+    const item = props.items[state.highlightedIndex];
+    const element = props.itemElements.get(item as Item);
+
+    if (element) {
+      element.scrollIntoView({ block: 'nearest' });
+    }
+  }
+}

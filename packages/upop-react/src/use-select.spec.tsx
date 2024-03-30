@@ -303,9 +303,9 @@ function menu(useSelect: UseSelect) {
   it('clears the highlighted item on mouse out', async () => {
     test.focusToggleButton();
 
-    await act(async () => {
-      await test.user.keyboard('{ArrowDown}');
+    await act(() => test.user.keyboard('{ArrowDown}'));
 
+    await act(async () => {
       await test.user.pointer([
         { target: menu },
         { target: document.documentElement },
@@ -365,7 +365,7 @@ function menuItem(useSelect: UseSelect) {
     it('aria-selected', async () => {
       expect(menuItem1).toHaveAttribute('aria-selected', 'false');
 
-      await act(() => test.user.keyboard('{ArrowDown}{Enter}'));
+      await act(() => test.user.click(menuItem1));
 
       expect(menuItem1).toHaveAttribute('aria-selected', 'true');
       expect(menuItem2).toHaveAttribute('aria-selected', 'false');

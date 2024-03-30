@@ -1,5 +1,5 @@
-import cx from 'classnames';
 import { useSelect } from '@upop/react';
+import cx from 'classnames';
 
 import { books, itemToString } from './books';
 

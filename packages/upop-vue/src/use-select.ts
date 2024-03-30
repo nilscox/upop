@@ -6,22 +6,25 @@ import {
   getLabelAttributes,
   getMenuAttributes,
   getToggleButtonAttributes,
+  handleSelectSideEffects,
   highlightedIndexChanged,
   isOpenChanged,
   itemClick,
   itemMouseMove,
-  menuMouseOut,
+  menuMouseLeave,
   selectInitialState,
   selectedItemChanged,
   toggleButtonBlur,
   toggleButtonClick,
   toggleButtonKeyDown,
 } from '@upop/core';
-import { Ref, computed, shallowRef, toValue, watch } from 'vue';
+import { Ref, computed, shallowRef, toValue } from 'vue';
 
+import { useControlProp } from './use-control-prop';
 import { useId } from './use-id';
+import { useRefs } from './use-refs';
 
-type SelectOptions<Item> = {
+type SelectProps<Item> = {
   items: Item[];
   id?: string;
   itemToString?: (item: Item | null) => string;
@@ -35,18 +38,11 @@ type SelectOptions<Item> = {
 
 export type UseSelect = typeof useSelect;
 
-export function useSelect<Item>(options: SelectOptions<Item>) {
-  const {
-    items,
-    isOpen,
-    onIsOpenChange,
-    selectedItem,
-    onSelectedItemChange,
-    highlightedIndex,
-    onHighlightedIndexChange,
-  } = options;
+export function useSelect<Item>(props: SelectProps<Item>) {
+  const { items, isOpen, selectedItem, highlightedIndex } = props;
 
-  const id = useId(options.id);
+  const id = useId(props.id);
+  const [itemElements, captureItemElement] = useRefs<Item>();
 
   const state = shallowRef(
     selectInitialState<Item>({
@@ -59,7 +55,18 @@ export function useSelect<Item>(options: SelectOptions<Item>) {
   const reducer = createSelectReducer(items);
 
   const dispatch: SelectDispatch = (action) => {
-    state.value = reducer(state.value, action);
+    const prevState = state.value;
+    const nextState = reducer(state.value, action);
+
+    state.value = nextState;
+
+    handleSelectSideEffects(prevState, nextState, action, {
+      items,
+      itemElements,
+      onIsOpenChange: props.onIsOpenChange,
+      onSelectedItemChange: props.onSelectedItemChange,
+      onHighlightedIndexChange: props.onHighlightedIndexChange,
+    });
   };
 
   const getLabelProps = () => {
@@ -78,40 +85,29 @@ export function useSelect<Item>(options: SelectOptions<Item>) {
   const getMenuProps = () => {
     return {
       ...getMenuAttributes(id),
-      onMouseout: () => dispatch(menuMouseOut()),
+      onMouseleave: () => dispatch(menuMouseLeave()),
     };
   };
 
-  const getItemProps = ({ index }: { item: Item; index: number }) => {
+  const getItemProps = ({ item, index }: { item: Item; index: number }) => {
     return {
       ...getItemAttributes(id, index, items, state.value),
+      ref: captureItemElement.bind(null, item),
       onClick: () => dispatch(itemClick(index)),
       onMousemove: () => dispatch(itemMouseMove(index)),
     };
   };
 
-  if (isOpen !== undefined) {
-    watch(isOpen, () => {
-      dispatch(isOpenChanged(toValue(isOpen)));
-    });
-  }
+  useControlProp(isOpen, (value) => {
+    dispatch(isOpenChanged(value));
+  });
 
-  if (selectedItem !== undefined) {
-    watch(selectedItem, () => {
-      dispatch(selectedItemChanged(toValue(selectedItem)));
-    });
-  }
+  useControlProp(selectedItem, (value) => {
+    dispatch(selectedItemChanged(value));
+  });
 
-  if (highlightedIndex !== undefined) {
-    watch(highlightedIndex, () => {
-      dispatch(highlightedIndexChanged(toValue(highlightedIndex)));
-    });
-  }
-
-  watch(state, () => {
-    onIsOpenChange?.(toValue(state));
-    onSelectedItemChange?.(toValue(state));
-    onHighlightedIndexChange?.(toValue(state));
+  useControlProp(highlightedIndex, (value) => {
+    dispatch(highlightedIndexChanged(value));
   });
 
   return computed(() => ({

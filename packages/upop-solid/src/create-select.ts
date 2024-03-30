@@ -6,21 +6,24 @@ import {
   getLabelAttributes,
   getMenuAttributes,
   getToggleButtonAttributes,
+  handleSelectSideEffects,
   highlightedIndexChanged,
   isOpenChanged,
   itemClick,
   itemMouseMove,
-  menuMouseOut,
+  menuMouseLeave,
   selectInitialState,
   selectedItemChanged,
   toggleButtonBlur,
   toggleButtonClick,
   toggleButtonKeyDown,
 } from '@upop/core';
-import { createEffect, createUniqueId, mergeProps, onMount } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import { createUniqueId, mergeProps } from 'solid-js';
+import { createStore, unwrap } from 'solid-js/store';
+import { createControlProp } from './create-control-prop';
+import { createRefs } from './create-refs';
 
-type SelectOptions<Item> = {
+type SelectProps<Item> = {
   items: Item[];
   id?: string;
   itemToString?: (item: Item | null) => string;
@@ -34,7 +37,7 @@ type SelectOptions<Item> = {
 
 export type CreateSelect = typeof createSelect;
 
-export function createSelect<Item>(options: SelectOptions<Item>) {
+export function createSelect<Item>(props: SelectProps<Item>) {
   const {
     items,
     isOpen,
@@ -43,9 +46,10 @@ export function createSelect<Item>(options: SelectOptions<Item>) {
     onHighlightedIndexChange,
     selectedItem,
     onSelectedItemChange,
-  } = options;
+  } = props;
 
-  const id = options.id ?? createUniqueId();
+  const id = props.id ?? createUniqueId();
+  const [itemElements, captureItemElement] = createRefs<Item>();
 
   const reducer = createSelectReducer(items);
 
@@ -58,8 +62,31 @@ export function createSelect<Item>(options: SelectOptions<Item>) {
   );
 
   const dispatch: SelectDispatch = (action) => {
-    setState(reducer(state, action));
+    const prevState = { ...unwrap(state) };
+    const nextState = reducer(prevState, action);
+
+    setState(nextState);
+
+    handleSelectSideEffects(prevState, nextState, action, {
+      items,
+      itemElements,
+      onIsOpenChange,
+      onSelectedItemChange,
+      onHighlightedIndexChange,
+    });
   };
+
+  createControlProp(isOpen, (value) => {
+    dispatch(isOpenChanged(value));
+  });
+
+  createControlProp(selectedItem, (value) => {
+    dispatch(selectedItemChanged(value));
+  });
+
+  createControlProp(highlightedIndex, (value) => {
+    dispatch(highlightedIndexChanged(value));
+  });
 
   const getLabelProps = () => {
     return getLabelAttributes(id);
@@ -77,59 +104,18 @@ export function createSelect<Item>(options: SelectOptions<Item>) {
   const getMenuProps = () => {
     return {
       ...getMenuAttributes(id),
-      onMouseOut: () => dispatch(menuMouseOut()),
+      onMouseLeave: () => dispatch(menuMouseLeave()),
     };
   };
 
-  const getItemProps = ({ index }: { item: Item; index: number }) => {
+  const getItemProps = ({ item, index }: { item: Item; index: number }) => {
     return {
       ...getItemAttributes(id, index, items, state),
+      ref: captureItemElement.bind(null, item),
       onClick: () => dispatch(itemClick(index)),
       onMouseMove: () => dispatch(itemMouseMove(index)),
     };
   };
-
-  let isInitialMount = true;
-
-  onMount(() => {
-    isInitialMount = false;
-  });
-
-  createEffect(() => {
-    const value = isOpen?.();
-
-    if (value !== undefined && !isInitialMount) {
-      dispatch(isOpenChanged(value));
-    }
-  });
-
-  createEffect(() => {
-    onIsOpenChange?.(state);
-  });
-
-  createEffect(() => {
-    const value = selectedItem?.();
-
-    if (value !== undefined && !isInitialMount) {
-      dispatch(selectedItemChanged(value));
-    }
-  });
-
-  createEffect(() => {
-    onSelectedItemChange?.(state);
-  });
-
-  createEffect(() => {
-    const value = highlightedIndex?.();
-
-    if (value !== undefined && !isInitialMount) {
-      dispatch(highlightedIndexChanged(value));
-    }
-  });
-
-  createEffect(() => {
-    onHighlightedIndexChange?.(state);
-  });
 
   return mergeProps(state, {
     getLabelProps,
