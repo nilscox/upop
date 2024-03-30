@@ -79,7 +79,7 @@ export function createSelectReducer<Item>(items: Item[]) {
       next.selectedItem = items[highlightedIndex] ?? selectedItem;
     }
 
-    if (action.type === 'menu-mouse-out') {
+    if (action.type === 'menu-mouse-leave') {
       next.highlightedIndex = -1;
     }
 

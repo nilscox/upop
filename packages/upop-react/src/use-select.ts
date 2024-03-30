@@ -11,7 +11,7 @@ import {
   isOpenChanged,
   itemClick,
   itemMouseMove,
-  menuMouseOut,
+  menuMouseLeave,
   selectInitialState,
   selectedItemChanged,
   toggleButtonBlur,
@@ -92,7 +92,7 @@ export function useSelect<Item>(props: SelectProps<Item>) {
   const getMenuProps = useCallback(() => {
     return {
       ...getMenuAttributes(id),
-      onMouseLeave: () => dispatch(menuMouseOut()),
+      onMouseLeave: () => dispatch(menuMouseLeave()),
     };
   }, [id, dispatch]);
 
