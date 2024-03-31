@@ -1,6 +1,8 @@
 /* @refresh reload */
 import { render } from 'solid-js/web';
 
+import { Combobox } from './combobox';
+import { ComboboxControlled } from './combobox-controlled';
 import { Select } from './select';
 import { SelectControlled } from './select-controlled';
 
@@ -15,9 +17,20 @@ render(
         <header>Basic select</header>
         <Select />
       </section>
+
       <section>
-        <header>Controlled</header>
+        <header>Controlled select</header>
         <SelectControlled />
+      </section>
+
+      <section>
+        <header>Basic combobox</header>
+        <Combobox />
+      </section>
+
+      <section>
+        <header>Controlled combobox</header>
+        <ComboboxControlled />
       </section>
     </div>
   ),

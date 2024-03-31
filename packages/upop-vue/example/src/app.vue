@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import Combobox from './combobox.vue';
+import ComboboxControlled from './combobox-controlled.vue';
 import Select from './select.vue';
 import SelectControlled from './select-controlled.vue';
 </script>
@@ -9,9 +11,20 @@ import SelectControlled from './select-controlled.vue';
       <header>Basic select</header>
       <Select />
     </section>
+
     <section>
-      <header>Controlled</header>
+      <header>Controlled select</header>
       <SelectControlled />
+    </section>
+
+    <section>
+      <header>Basic combobox</header>
+      <Combobox />
+    </section>
+
+    <section>
+      <header>Controlled combobox</header>
+      <ComboboxControlled />
     </section>
   </div>
 </template>

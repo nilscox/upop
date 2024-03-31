@@ -1,4 +1,14 @@
-import { createAction } from './create-action';
+import {
+  highlightedIndexChanged,
+  isOpenChanged,
+  itemClick,
+  itemMouseMove,
+  menuMouseLeave,
+  selectedItemChanged,
+  toggleButtonBlur,
+  toggleButtonClick,
+  toggleButtonKeyDown,
+} from './actions';
 import { removeUndefined } from './remove-undefined';
 
 export type SelectState<Item> = {
@@ -112,34 +122,19 @@ export function createSelectReducer<Item>(items: Item[]) {
   };
 }
 
-export const isOpenChanged = createAction(
-  'is-open-changed',
-  (isOpen: boolean) => ({ isOpen }),
-);
-
-export const selectedItemChanged = createAction(
-  'selected-item-changed',
-  <Item>(item: Item | null) => ({ item }),
-);
-
-export const highlightedIndexChanged = createAction(
-  'highlighted-index-changed',
-  (index: number) => ({ index }),
-);
-
-export type LabelAttributes = {
+export type SelectLabelAttributes = {
   id: string;
   htmlFor: string;
 };
 
-export function getLabelAttributes(id: string): LabelAttributes {
+export function getSelectLabelAttributes(id: string): SelectLabelAttributes {
   return {
     id: `${id}-label`,
     htmlFor: `${id}-toggle-button`,
   };
 }
 
-export type ToggleButtonAttributes = {
+export type SelectToggleButtonAttributes = {
   role: 'combobox';
   tabIndex: 0;
   id: string;
@@ -150,10 +145,10 @@ export type ToggleButtonAttributes = {
   'aria-labelledby': string;
 };
 
-export function getToggleButtonAttributes<Item>(
+export function getSelectToggleButtonAttributes<Item>(
   id: string,
   state: SelectState<Item>,
-): ToggleButtonAttributes {
+): SelectToggleButtonAttributes {
   const { isOpen, highlightedIndex } = state;
 
   return {
@@ -169,22 +164,13 @@ export function getToggleButtonAttributes<Item>(
   };
 }
 
-export const toggleButtonClick = createAction('toggle-button-click');
-
-export const toggleButtonKeyDown = createAction(
-  'toggle-button-key-down',
-  (key: string) => ({ key }),
-);
-
-export const toggleButtonBlur = createAction('toggle-button-blur');
-
-export type MenuAttributes = {
+export type SelectMenuAttributes = {
   id: string;
   role: 'listbox';
   'aria-labelledby': string;
 };
 
-export function getMenuAttributes(id: string): MenuAttributes {
+export function getSelectMenuAttributes(id: string): SelectMenuAttributes {
   return {
     id: `${id}-menu`,
     role: 'listbox',
@@ -192,21 +178,19 @@ export function getMenuAttributes(id: string): MenuAttributes {
   };
 }
 
-export const menuMouseLeave = createAction('menu-mouse-leave');
-
-export type ItemAttributes = {
+export type SelectItemAttributes = {
   id: string;
   role: 'option';
   'aria-disabled': boolean;
   'aria-selected': boolean;
 };
 
-export function getItemAttributes<Item>(
+export function getSelectItemAttributes<Item>(
   id: string,
   index: number,
   items: Item[],
   state: SelectState<Item>,
-): ItemAttributes {
+): SelectItemAttributes {
   return {
     id: `${id}-item-${index}`,
     role: 'option',
@@ -214,17 +198,6 @@ export function getItemAttributes<Item>(
     'aria-selected': index === items.indexOf(state.selectedItem as Item),
   };
 }
-
-export const itemClick = createAction('item-click', (index: number) => ({
-  index,
-}));
-
-export const itemMouseMove = createAction(
-  'item-mouse-move',
-  (index: number) => ({
-    index,
-  }),
-);
 
 type SelectSideEffectProps<Item> = {
   items: Item[];

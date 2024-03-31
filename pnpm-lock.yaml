@@ -58,8 +58,8 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(vite@5.1.5)
       downshift:
-        specifier: ^8.4.0
-        version: 8.4.0(react@18.2.0)
+        specifier: ^9.0.1
+        version: 9.0.1(react@18.2.0)
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -454,6 +454,13 @@ packages:
 
   /@babel/runtime@7.24.0:
     resolution: {integrity: sha512-Chk32uHMg6TnQdvw2e9IlqPpFX/6NLuK0Ys2PqLb7/gL5uFn9mXvK715FGLlOLQrcO4qIkNHkvPGktzzXexsFw==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      regenerator-runtime: 0.14.1
+    dev: true
+
+  /@babel/runtime@7.24.1:
+    resolution: {integrity: sha512-+BIznRzyqBf+2wCTxcKE3wDjfGeCoVE61KSHGpkzqrLi8qxqFwBeUFyId2cxkTmm55fzDGnm0+yCxaxygrLUnQ==}
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.14.1
@@ -1973,12 +1980,12 @@ packages:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
     dev: true
 
-  /downshift@8.4.0(react@18.2.0):
-    resolution: {integrity: sha512-feeqAR0s53NTIKaHxyFhdLo9UCHUwge4q/j+heIz7X8AaURgdcANOnMGLWffWQCoX9l4Vpw87nOrlX6uJceqjA==}
+  /downshift@9.0.1(react@18.2.0):
+    resolution: {integrity: sha512-9VrPqAw8zHITSOds4JttSjwycnPzJtLF0ufHmy5iRdkod5ekQTupck2fQXd8ktF3smXporTjcykyJTxT82t5bg==}
     peerDependencies:
       react: '>=16.12.0'
     dependencies:
-      '@babel/runtime': 7.24.0
+      '@babel/runtime': 7.24.1
       compute-scroll-into-view: 3.1.0
       prop-types: 15.8.1
       react: 18.2.0

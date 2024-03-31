@@ -2,10 +2,10 @@ import {
   SelectAction,
   SelectState,
   createSelectReducer,
-  getItemAttributes,
-  getLabelAttributes,
-  getMenuAttributes,
-  getToggleButtonAttributes,
+  getSelectItemAttributes,
+  getSelectLabelAttributes,
+  getSelectMenuAttributes,
+  getSelectToggleButtonAttributes,
   handleSelectSideEffects,
   highlightedIndexChanged,
   isOpenChanged,
@@ -24,7 +24,7 @@ import { useControlProp } from './use-control-prop';
 import { useId } from './use-id';
 import { useRefs } from './use-refs';
 
-type SelectProps<Item> = {
+export type SelectProps<Item> = {
   items: Item[];
   id?: string;
   itemToString?: (item: Item | null) => string;
@@ -76,12 +76,12 @@ export function useSelect<Item>(props: SelectProps<Item>) {
   });
 
   const getLabelProps = useCallback(() => {
-    return getLabelAttributes(id);
+    return getSelectLabelAttributes(id);
   }, [id]);
 
   const getToggleButtonProps = useCallback(() => {
     return {
-      ...getToggleButtonAttributes(id, state),
+      ...getSelectToggleButtonAttributes(id, state),
       onClick: () => dispatch(toggleButtonClick()),
       onKeyDown: ({ key }: React.KeyboardEvent) =>
         dispatch(toggleButtonKeyDown(key)),
@@ -91,7 +91,7 @@ export function useSelect<Item>(props: SelectProps<Item>) {
 
   const getMenuProps = useCallback(() => {
     return {
-      ...getMenuAttributes(id),
+      ...getSelectMenuAttributes(id),
       onMouseLeave: () => dispatch(menuMouseLeave()),
     };
   }, [id, dispatch]);
@@ -99,7 +99,7 @@ export function useSelect<Item>(props: SelectProps<Item>) {
   const getItemProps = useCallback(
     ({ item, index }: { item: Item; index: number }) => {
       return {
-        ...getItemAttributes(id, index, items, state),
+        ...getSelectItemAttributes(id, index, items, state),
         ref: captureItemElement.bind(null, item),
         onClick: () => dispatch(itemClick(index)),
         onMouseMove: () => dispatch(itemMouseMove(index)),

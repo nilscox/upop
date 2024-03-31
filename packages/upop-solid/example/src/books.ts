@@ -20,3 +20,15 @@ export const books: Book[] = [
 export function itemToString(item: Book | null) {
   return item ? item.title : '';
 }
+
+export function getBooksFilter(inputValue: string) {
+  const lowerCasedInputValue = inputValue.toLowerCase();
+
+  return function booksFilter(book: Book) {
+    return (
+      !inputValue ||
+      book.title.toLowerCase().includes(lowerCasedInputValue) ||
+      book.author.toLowerCase().includes(lowerCasedInputValue)
+    );
+  };
+}

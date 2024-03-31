@@ -29,25 +29,33 @@ const select = useSelect({
 <template>
   <div>
     <div className="flex flex-col lg:flex-row gap-4 my-4">
-      <button @click="isOpen = !isOpen">Toggle open</button>
+      <button class="btn" @click="isOpen = !isOpen">Toggle open</button>
 
-      <button @click="highlightedIndex -= 1">Highlight previous item</button>
+      <button class="btn" @click="highlightedIndex -= 1">
+        Highlight previous item
+      </button>
 
-      <button @click="highlightedIndex += 1">Highlight next item</button>
+      <button class="btn" @click="highlightedIndex += 1">
+        Highlight next item
+      </button>
 
       <button
+        class="btn"
         @click="selectedItem = books[books.indexOf(toRaw(selectedItem)!) - 1]"
       >
         Select previous item
       </button>
 
       <button
+        class="btn"
         @click="selectedItem = books[books.indexOf(toRaw(selectedItem)!) + 1]"
       >
         Select next item
       </button>
 
-      <button @click="selectedItem = null">Clear selected item</button>
+      <button class="btn" @click="selectedItem = null">
+        Clear selected item
+      </button>
     </div>
 
     <div class="w-72 flex flex-col gap-1">

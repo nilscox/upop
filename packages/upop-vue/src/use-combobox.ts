@@ -1,22 +1,25 @@
 import {
-  SelectDispatch,
-  SelectState,
-  createSelectReducer,
-  getSelectItemAttributes,
-  getSelectLabelAttributes,
-  getSelectMenuAttributes,
-  getSelectToggleButtonAttributes,
-  handleSelectSideEffects,
+  ComboboxDispatch,
+  ComboboxState,
+  comboboxInitialState,
+  createComboboxReducer,
+  getComboboxInputAttributes,
+  getComboboxItemAttributes,
+  getComboboxLabelAttributes,
+  getComboboxMenuAttributes,
+  getComboboxToggleButtonAttributes,
+  handleComboboxSideEffects,
   highlightedIndexChanged,
+  inputBlur,
+  inputClick,
+  inputKeyDown,
+  inputValueChanged,
   isOpenChanged,
   itemClick,
   itemMouseMove,
   menuMouseLeave,
-  selectInitialState,
   selectedItemChanged,
-  toggleButtonBlur,
   toggleButtonClick,
-  toggleButtonKeyDown,
 } from '@upop/core';
 import { Ref, computed, shallowRef, toValue } from 'vue';
 
@@ -24,48 +27,59 @@ import { useControlProp } from './use-control-prop';
 import { useId } from './use-id';
 import { useRefs } from './use-refs';
 
-type SelectProps<Item> = {
+type ComboboxProps<Item> = {
   items: Item[];
   id?: string;
   itemToString?: (item: Item | null) => string;
   isOpen?: Ref<boolean>;
-  onIsOpenChange?: (state: SelectState<Item>) => void;
+  onIsOpenChange?: (state: ComboboxState<Item>) => void;
   selectedItem?: Ref<Item | null>;
-  onSelectedItemChange?: (state: SelectState<Item>) => void;
+  onSelectedItemChange?: (state: ComboboxState<Item>) => void;
   highlightedIndex?: Ref<number>;
-  onHighlightedIndexChange?: (state: SelectState<Item>) => void;
+  onHighlightedIndexChange?: (state: ComboboxState<Item>) => void;
+  inputValue?: Ref<string>;
+  onInputValueChange?: (state: ComboboxState<Item>) => void;
 };
 
-export type UseSelect = typeof useSelect;
+export type UseCombobox = typeof useCombobox;
 
-export function useSelect<Item>(props: SelectProps<Item>) {
-  const { items, isOpen, selectedItem, highlightedIndex } = props;
+export function useCombobox<Item>(props: ComboboxProps<Item>) {
+  const {
+    items,
+    itemToString,
+    isOpen,
+    selectedItem,
+    highlightedIndex,
+    inputValue,
+  } = props;
 
   const id = useId(props.id);
   const [itemElements, captureItemElement] = useRefs<Item>();
 
   const state = shallowRef(
-    selectInitialState<Item>({
+    comboboxInitialState<Item>({
       isOpen: isOpen?.value,
       selectedItem: selectedItem?.value,
       highlightedIndex: highlightedIndex?.value,
+      inputValue: inputValue?.value,
     }),
   );
 
-  const reducer = createSelectReducer(items);
+  const reducer = createComboboxReducer(items, itemToString ?? String);
 
-  const dispatch: SelectDispatch = (action) => {
+  const dispatch: ComboboxDispatch = (action) => {
     const prevState = state.value;
     const nextState = reducer(state.value, action);
 
     state.value = nextState;
 
-    handleSelectSideEffects(prevState, nextState, action, {
+    handleComboboxSideEffects(prevState, nextState, action, {
       items,
       itemElements,
       onIsOpenChange: props.onIsOpenChange,
       onSelectedItemChange: props.onSelectedItemChange,
       onHighlightedIndexChange: props.onHighlightedIndexChange,
+      onInputValueChange: props.onInputValueChange,
     });
   };
 
@@ -81,32 +95,46 @@ export function useSelect<Item>(props: SelectProps<Item>) {
     dispatch(highlightedIndexChanged(value));
   });
 
+  useControlProp(inputValue, (value) => {
+    dispatch(inputValueChanged(value));
+  });
+
   const getLabelProps = () => {
-    return getSelectLabelAttributes(id);
+    return getComboboxLabelAttributes(id);
   };
 
   const getToggleButtonProps = () => {
     return {
-      ...getSelectToggleButtonAttributes(id, state.value),
+      ...getComboboxToggleButtonAttributes(id, state.value),
       onClick: () => dispatch(toggleButtonClick()),
-      onKeydown: ({ key }: KeyboardEvent) => dispatch(toggleButtonKeyDown(key)),
-      onBlur: () => dispatch(toggleButtonBlur()),
     };
   };
 
   const getMenuProps = () => {
     return {
-      ...getSelectMenuAttributes(id),
+      ...getComboboxMenuAttributes(id),
       onMouseleave: () => dispatch(menuMouseLeave()),
     };
   };
 
   const getItemProps = ({ item, index }: { item: Item; index: number }) => {
     return {
-      ...getSelectItemAttributes(id, index, items, state.value),
+      ...getComboboxItemAttributes(id, index, state.value),
       ref: captureItemElement.bind(null, item),
       onClick: () => dispatch(itemClick(index)),
       onMousemove: () => dispatch(itemMouseMove(index)),
+    };
+  };
+
+  const getInputProps = () => {
+    return {
+      ...getComboboxInputAttributes(id, state.value),
+      onClick: () => dispatch(inputClick()),
+      onBlur: () => dispatch(inputBlur()),
+      onKeydown: ({ key }: KeyboardEvent) => dispatch(inputKeyDown(key)),
+      onInput: (event: { target: HTMLInputElement }) => {
+        dispatch(inputValueChanged(event.target.value));
+      },
     };
   };
 
@@ -116,5 +144,6 @@ export function useSelect<Item>(props: SelectProps<Item>) {
     getToggleButtonProps,
     getMenuProps,
     getItemProps,
+    getInputProps,
   }));
 }

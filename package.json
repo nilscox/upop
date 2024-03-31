@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc -b",
-    "lint": "pnpm run -r lint"
+    "lint": "pnpm run -r lint",
+    "clean": "rm -rf packages/*/lib"
   },
   "devDependencies": {
     "typescript": "^5.4.2"

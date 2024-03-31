@@ -30,17 +30,26 @@ export function SelectControlled() {
   return (
     <div>
       <div className="flex flex-col lg:flex-row gap-4 my-4">
-        <button onClick={() => setIsOpen(!isOpen)}>Toggle open</button>
+        <button className="btn" onClick={() => setIsOpen(!isOpen)}>
+          Toggle open
+        </button>
 
-        <button onClick={() => setHighlightedIndex(highlightedIndex - 1)}>
+        <button
+          className="btn"
+          onClick={() => setHighlightedIndex(highlightedIndex - 1)}
+        >
           Highlight previous item
         </button>
 
-        <button onClick={() => setHighlightedIndex(highlightedIndex + 1)}>
+        <button
+          className="btn"
+          onClick={() => setHighlightedIndex(highlightedIndex + 1)}
+        >
           Highlight next item
         </button>
 
         <button
+          className="btn"
           onClick={() =>
             setSelectedItem(books[books.indexOf(selectedItem!) - 1])
           }
@@ -49,6 +58,7 @@ export function SelectControlled() {
         </button>
 
         <button
+          className="btn"
           onClick={() =>
             setSelectedItem(books[books.indexOf(selectedItem!) + 1])
           }
@@ -56,7 +66,7 @@ export function SelectControlled() {
           Select next item
         </button>
 
-        <button onClick={() => setSelectedItem(null)}>
+        <button className="btn" onClick={() => setSelectedItem(null)}>
           Clear selected item
         </button>
       </div>

@@ -1,8 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { Select } from './select.tsx';
-import { SelectControlled } from './select-controlled.tsx';
+import { ComboBox } from './combobox';
+import { ComboboxControlled } from './combobox-controlled';
+import { Select } from './select';
+import { SelectControlled } from './select-controlled';
 
 import './main.css';
 
@@ -13,9 +15,20 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <header>Basic select</header>
         <Select />
       </section>
+
       <section>
-        <header>Controlled</header>
+        <header>Controlled select</header>
         <SelectControlled />
+      </section>
+
+      <section>
+        <header>Basic combobox</header>
+        <ComboBox />
+      </section>
+
+      <section>
+        <header>Controlled combobox</header>
+        <ComboboxControlled />
       </section>
     </div>
   </React.StrictMode>,
