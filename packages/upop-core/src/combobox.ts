@@ -61,7 +61,9 @@ export function comboboxReducer<Item>(
   };
 
   const selectHighlightedItem = () => {
-    selectItem(items[highlightedIndex] ?? null);
+    if (highlightedIndex !== -1) {
+      selectItem(items[highlightedIndex] ?? null);
+    }
   };
 
   if (action.type === 'input-click') {

@@ -237,6 +237,21 @@ function input(useCombobox: UseCombobox) {
     });
   });
 
+  it('keeps the selected item on blur with no items', async () => {
+    test.props.items = [];
+    test.props.selectedItem = items[0];
+    test.rerender();
+
+    await act(() => test.user.click(test.input));
+    act(() => test.input.blur());
+
+    test.expectState({
+      isOpen: false,
+      selectedItem: items[0],
+      inputValue: 'one',
+    });
+  });
+
   it('closes the popup with the escape key', async () => {
     await act(() => test.user.keyboard('{ArrowDown}'));
     await act(() => test.user.keyboard('{Escape}'));
