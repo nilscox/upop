@@ -1,6 +1,6 @@
 {
   "name": "@upop/vue",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
@@ -13,7 +13,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@upop/core": "0.1.3"
+    "@upop/core": "0.1.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
