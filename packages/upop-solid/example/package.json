@@ -8,6 +8,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@upop/core": "workspace:*",
     "@upop/solid": "workspace:*"
   },
   "devDependencies": {

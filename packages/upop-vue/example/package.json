@@ -8,6 +8,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@upop/core": "workspace:*",
     "vue": "^3.4.26"
   },
   "devDependencies": {

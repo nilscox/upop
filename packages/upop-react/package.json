@@ -1,6 +1,6 @@
 {
   "name": "@upop/react",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
@@ -14,7 +14,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@upop/core": "0.1.4"
+    "@upop/core": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",
