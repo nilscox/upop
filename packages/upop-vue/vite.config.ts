@@ -13,11 +13,15 @@ export default defineConfig({
   },
   build: {
     outDir: 'lib',
+    sourcemap: true,
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'upop',
       fileName: 'index',
       formats: ['es'],
+    },
+    rollupOptions: {
+      external: ['@upop/core', 'vue'],
     },
   },
 });

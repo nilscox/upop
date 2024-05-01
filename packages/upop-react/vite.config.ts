@@ -13,6 +13,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'lib',
+    sourcemap: true,
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'upop',
@@ -20,7 +21,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['react'],
+      external: ['@upop/core', 'react'],
       output: {
         globals: {
           react: 'React',
