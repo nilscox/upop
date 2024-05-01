@@ -8,6 +8,6 @@
     "clean": "rm -rf packages/*/lib"
   },
   "devDependencies": {
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.5"
   }
 }

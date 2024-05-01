@@ -23,7 +23,7 @@ import {
 } from '@upop/core';
 import { ChangeEvent, useCallback, useState } from 'react';
 
-import { SelectProps } from '.';
+import { SelectProps } from './use-select';
 import { useControlProp } from './use-control-prop';
 import { useId } from './use-id';
 import { useRefs } from './use-refs';

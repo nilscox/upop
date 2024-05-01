@@ -7,9 +7,7 @@ import dts from 'vite-plugin-dts';
 export default defineConfig({
   plugins: [solid(), dts({ rollupTypes: true })],
   resolve: {
-    alias: {
-      '@upop/core': path.resolve(__dirname, '../upop-core/src'),
-    },
+    alias: alias(),
   },
   build: {
     outDir: 'lib',
@@ -25,3 +23,11 @@ export default defineConfig({
     },
   },
 });
+
+function alias() {
+  if (process.env.NODE_ENV === 'development') {
+    return {
+      '@upop/core': path.resolve(__dirname, '../upop-core/src'),
+    };
+  }
+}
