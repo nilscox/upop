@@ -1,7 +1,6 @@
 import {
   SelectAction,
   SelectState,
-  createSelectReducer,
   getSelectItemAttributes,
   getSelectLabelAttributes,
   getSelectMenuAttributes,
@@ -13,6 +12,7 @@ import {
   itemMouseMove,
   menuMouseLeave,
   selectInitialState,
+  selectReducer,
   selectedItemChanged,
   toggleButtonBlur,
   toggleButtonClick,
@@ -44,13 +44,11 @@ export function useSelect<Item>(props: SelectProps<Item>) {
   const id = useId(props.id);
   const [itemElements, captureItemElement] = useRefs<Item>();
 
-  const reducer = useCallback(createSelectReducer(items), [items]);
-
   const [state, setState] = useState(selectInitialState<Item>(props));
 
   const dispatch = (action: SelectAction) => {
     const prevState = state;
-    const nextState = reducer(state, action);
+    const nextState = selectReducer(items, state, action);
 
     setState(nextState);
 

@@ -1,7 +1,7 @@
 import {
   SelectDispatch,
   SelectState,
-  createSelectReducer,
+  selectReducer,
   getSelectItemAttributes,
   getSelectLabelAttributes,
   getSelectMenuAttributes,
@@ -24,8 +24,8 @@ import { createControlProp } from './create-control-prop';
 import { createRefs } from './create-refs';
 
 type SelectProps<Item> = {
-  items: Item[];
   id?: string;
+  items: Item[];
   itemToString?: (item: Item | null) => string;
   isOpen?: () => boolean;
   onIsOpenChange?: (state: SelectState<Item>) => void;
@@ -38,53 +38,41 @@ type SelectProps<Item> = {
 export type CreateSelect = typeof createSelect;
 
 export function createSelect<Item>(props: SelectProps<Item>) {
-  const {
-    items,
-    isOpen,
-    onIsOpenChange,
-    highlightedIndex,
-    onHighlightedIndexChange,
-    selectedItem,
-    onSelectedItemChange,
-  } = props;
-
   const id = props.id ?? createUniqueId();
   const [itemElements, captureItemElement] = createRefs<Item>();
 
-  const reducer = createSelectReducer(items);
-
   const [state, setState] = createStore(
     selectInitialState<Item>({
-      isOpen: isOpen?.(),
-      selectedItem: selectedItem?.(),
-      highlightedIndex: highlightedIndex?.(),
+      isOpen: props.isOpen?.(),
+      selectedItem: props.selectedItem?.(),
+      highlightedIndex: props.highlightedIndex?.(),
     }),
   );
 
   const dispatch: SelectDispatch = (action) => {
     const prevState = { ...unwrap(state) };
-    const nextState = reducer(prevState, action);
+    const nextState = selectReducer(props.items, prevState, action);
 
     setState(nextState);
 
     handleSelectSideEffects(prevState, nextState, action, {
-      items,
+      items: props.items,
       itemElements,
-      onIsOpenChange,
-      onSelectedItemChange,
-      onHighlightedIndexChange,
+      onIsOpenChange: props.onIsOpenChange,
+      onSelectedItemChange: props.onSelectedItemChange,
+      onHighlightedIndexChange: props.onHighlightedIndexChange,
     });
   };
 
-  createControlProp(isOpen, (value) => {
+  createControlProp(props.isOpen, (value) => {
     dispatch(isOpenChanged(value));
   });
 
-  createControlProp(selectedItem, (value) => {
+  createControlProp(props.selectedItem, (value) => {
     dispatch(selectedItemChanged(value));
   });
 
-  createControlProp(highlightedIndex, (value) => {
+  createControlProp(props.highlightedIndex, (value) => {
     dispatch(highlightedIndexChanged(value));
   });
 
@@ -110,7 +98,7 @@ export function createSelect<Item>(props: SelectProps<Item>) {
 
   const getItemProps = ({ item, index }: { item: Item; index: number }) => {
     return {
-      ...getSelectItemAttributes(id, index, items, state),
+      ...getSelectItemAttributes(id, index, props.items, state),
       ref: captureItemElement.bind(null, item),
       onClick: () => dispatch(itemClick(index)),
       onMouseMove: () => dispatch(itemMouseMove(index)),

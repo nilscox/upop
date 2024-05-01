@@ -1,7 +1,6 @@
 import {
   SelectDispatch,
   SelectState,
-  createSelectReducer,
   getSelectItemAttributes,
   getSelectLabelAttributes,
   getSelectMenuAttributes,
@@ -13,6 +12,7 @@ import {
   itemMouseMove,
   menuMouseLeave,
   selectInitialState,
+  selectReducer,
   selectedItemChanged,
   toggleButtonBlur,
   toggleButtonClick,
@@ -52,11 +52,9 @@ export function useSelect<Item>(props: SelectProps<Item>) {
     }),
   );
 
-  const reducer = createSelectReducer(items);
-
   const dispatch: SelectDispatch = (action) => {
     const prevState = state.value;
-    const nextState = reducer(state.value, action);
+    const nextState = selectReducer(items, state.value, action);
 
     state.value = nextState;
 

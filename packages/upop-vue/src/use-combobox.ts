@@ -2,7 +2,7 @@ import {
   ComboboxDispatch,
   ComboboxState,
   comboboxInitialState,
-  createComboboxReducer,
+  comboboxReducer,
   getComboboxInputAttributes,
   getComboboxItemAttributes,
   getComboboxLabelAttributes,
@@ -46,7 +46,7 @@ export type UseCombobox = typeof useCombobox;
 export function useCombobox<Item>(props: ComboboxProps<Item>) {
   const {
     items,
-    itemToString,
+    itemToString = String,
     isOpen,
     selectedItem,
     highlightedIndex,
@@ -65,11 +65,9 @@ export function useCombobox<Item>(props: ComboboxProps<Item>) {
     }),
   );
 
-  const reducer = createComboboxReducer(items, itemToString ?? String);
-
   const dispatch: ComboboxDispatch = (action) => {
     const prevState = state.value;
-    const nextState = reducer(state.value, action);
+    const nextState = comboboxReducer(items, itemToString, state.value, action);
 
     state.value = nextState;
 

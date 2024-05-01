@@ -2,7 +2,7 @@ import {
   ComboboxDispatch,
   ComboboxState,
   comboboxInitialState,
-  createComboboxReducer,
+  comboboxReducer,
   getComboboxInputAttributes,
   getComboboxItemAttributes,
   getComboboxLabelAttributes,
@@ -27,8 +27,8 @@ import { createControlProp } from './create-control-prop';
 import { createRefs } from './create-refs';
 
 type ComboboxProps<Item> = {
-  items: Item[];
   id?: string;
+  items: Item[];
   itemToString?: (item: Item | null) => string;
   isOpen?: () => boolean;
   onIsOpenChange?: (state: ComboboxState<Item>) => void;
@@ -43,62 +43,52 @@ type ComboboxProps<Item> = {
 export type CreateCombobox = typeof createCombobox;
 
 export function createCombobox<Item>(props: ComboboxProps<Item>) {
-  const {
-    items,
-    itemToString,
-    isOpen,
-    onIsOpenChange,
-    highlightedIndex,
-    onHighlightedIndexChange,
-    selectedItem,
-    onSelectedItemChange,
-    inputValue,
-    onInputValueChange,
-  } = props;
-
   const id = props.id ?? createUniqueId();
   const [itemElements, captureItemElement] = createRefs<Item>();
 
-  const reducer = createComboboxReducer(items, itemToString ?? String);
-
   const [state, setState] = createStore(
-    comboboxInitialState<Item>({
-      isOpen: isOpen?.(),
-      selectedItem: selectedItem?.(),
-      highlightedIndex: highlightedIndex?.(),
-      inputValue: inputValue?.(),
+    comboboxInitialState({
+      isOpen: props.isOpen?.(),
+      selectedItem: props.selectedItem?.(),
+      highlightedIndex: props.highlightedIndex?.(),
+      inputValue: props.inputValue?.(),
     }),
   );
 
   const dispatch: ComboboxDispatch = (action) => {
     const prevState = { ...unwrap(state) };
-    const nextState = reducer(prevState, action);
+    const nextState = comboboxReducer(
+      props.items,
+      props.itemToString ?? String,
+      prevState,
+      action,
+    );
 
     setState(nextState);
 
     handleComboboxSideEffects(prevState, nextState, action, {
-      items,
+      items: props.items,
       itemElements,
-      onIsOpenChange,
-      onSelectedItemChange,
-      onHighlightedIndexChange,
-      onInputValueChange,
+      onIsOpenChange: props.onIsOpenChange,
+      onSelectedItemChange: props.onSelectedItemChange,
+      onHighlightedIndexChange: props.onHighlightedIndexChange,
+      onInputValueChange: props.onInputValueChange,
     });
   };
 
-  createControlProp(isOpen, (value) => {
+  createControlProp(props.isOpen, (value) => {
     dispatch(isOpenChanged(value));
   });
 
-  createControlProp(selectedItem, (value) => {
+  createControlProp(props.selectedItem, (value) => {
     dispatch(selectedItemChanged(value));
   });
 
-  createControlProp(highlightedIndex, (value) => {
+  createControlProp(props.highlightedIndex, (value) => {
     dispatch(highlightedIndexChanged(value));
   });
 
-  createControlProp(inputValue, (value) => {
+  createControlProp(props.inputValue, (value) => {
     dispatch(inputValueChanged(value));
   });
 

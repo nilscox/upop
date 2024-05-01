@@ -9,7 +9,6 @@ import {
   toggleButtonClick,
   toggleButtonKeyDown,
 } from './actions';
-import { removeUndefined } from './remove-undefined';
 
 export type SelectState<Item> = {
   isOpen: boolean;
@@ -35,91 +34,89 @@ export function selectInitialState<Item>(
   state: Partial<SelectState<Item>>,
 ): SelectState<Item> {
   return {
-    isOpen: false,
-    highlightedIndex: -1,
-    selectedItem: null,
-    ...removeUndefined(state),
+    isOpen: state.isOpen ?? false,
+    highlightedIndex: state.highlightedIndex ?? -1,
+    selectedItem: state.selectedItem ?? null,
   };
 }
 
-export function createSelectReducer<Item>(items: Item[]) {
-  return function (
-    state: SelectState<Item>,
-    action: SelectAction,
-  ): SelectState<Item> {
-    const { isOpen, highlightedIndex, selectedItem } = state;
-    const next = { ...state };
+export function selectReducer<Item>(
+  items: Item[],
+  state: SelectState<Item>,
+  action: SelectAction,
+): SelectState<Item> {
+  const { isOpen, highlightedIndex, selectedItem } = state;
+  const next = { ...state };
 
-    if (action.type === 'toggle-button-click') {
+  if (action.type === 'toggle-button-click') {
+    next.isOpen = !isOpen;
+  }
+
+  if (action.type === 'toggle-button-key-down') {
+    if (['Enter', ' '].includes(action.key)) {
       next.isOpen = !isOpen;
-    }
 
-    if (action.type === 'toggle-button-key-down') {
-      if (['Enter', ' '].includes(action.key)) {
-        next.isOpen = !isOpen;
-
-        if (highlightedIndex !== -1) {
-          next.selectedItem = items[highlightedIndex] ?? null;
-        }
-      }
-
-      if (['ArrowUp', 'ArrowDown'].includes(action.key)) {
-        next.isOpen = true;
-      }
-
-      if (action.key === 'ArrowDown' && highlightedIndex < items.length - 1) {
-        next.highlightedIndex += 1;
-      }
-
-      if (action.key === 'ArrowUp') {
-        if (highlightedIndex === -1) {
-          next.highlightedIndex = items.length - 1;
-        } else if (highlightedIndex > 0) {
-          next.highlightedIndex -= 1;
-        }
-      }
-
-      if (action.key === 'Escape') {
-        next.isOpen = false;
+      if (highlightedIndex !== -1) {
+        next.selectedItem = items[highlightedIndex] ?? null;
       }
     }
 
-    if (action.type === 'toggle-button-blur') {
+    if (['ArrowUp', 'ArrowDown'].includes(action.key)) {
+      next.isOpen = true;
+    }
+
+    if (action.key === 'ArrowDown' && highlightedIndex < items.length - 1) {
+      next.highlightedIndex += 1;
+    }
+
+    if (action.key === 'ArrowUp') {
+      if (highlightedIndex === -1) {
+        next.highlightedIndex = items.length - 1;
+      } else if (highlightedIndex > 0) {
+        next.highlightedIndex -= 1;
+      }
+    }
+
+    if (action.key === 'Escape') {
       next.isOpen = false;
-      next.selectedItem = items[highlightedIndex] ?? selectedItem;
     }
+  }
 
-    if (action.type === 'menu-mouse-leave') {
-      next.highlightedIndex = -1;
-    }
+  if (action.type === 'toggle-button-blur') {
+    next.isOpen = false;
+    next.selectedItem = items[highlightedIndex] ?? selectedItem;
+  }
 
-    if (action.type === 'item-mouse-move') {
-      next.highlightedIndex = action.index;
-    }
+  if (action.type === 'menu-mouse-leave') {
+    next.highlightedIndex = -1;
+  }
 
-    if (action.type === 'item-click' && action.index !== -1) {
-      next.isOpen = false;
-      next.selectedItem = items[action.index] ?? null;
-    }
+  if (action.type === 'item-mouse-move') {
+    next.highlightedIndex = action.index;
+  }
 
-    if (!next.isOpen) {
-      next.highlightedIndex = -1;
-    }
+  if (action.type === 'item-click' && action.index !== -1) {
+    next.isOpen = false;
+    next.selectedItem = items[action.index] ?? null;
+  }
 
-    if (action.type === 'is-open-changed') {
-      next.isOpen = action.isOpen;
-    }
+  if (!next.isOpen) {
+    next.highlightedIndex = -1;
+  }
 
-    if (action.type === 'selected-item-changed') {
-      next.selectedItem = action.item as Item | null;
-    }
+  if (action.type === 'is-open-changed') {
+    next.isOpen = action.isOpen;
+  }
 
-    if (action.type === 'highlighted-index-changed') {
-      next.highlightedIndex = action.index;
-    }
+  if (action.type === 'selected-item-changed') {
+    next.selectedItem = action.item as Item | null;
+  }
 
-    return next;
-  };
+  if (action.type === 'highlighted-index-changed') {
+    next.highlightedIndex = action.index;
+  }
+
+  return next;
 }
 
 export type SelectLabelAttributes = {

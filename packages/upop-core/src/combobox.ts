@@ -11,7 +11,6 @@ import {
   selectedItemChanged,
   toggleButtonClick,
 } from './actions';
-import { removeUndefined } from './remove-undefined';
 
 export type ComboboxState<Item> = {
   isOpen: boolean;
@@ -40,114 +39,110 @@ export function comboboxInitialState<Item>(
   state: Partial<ComboboxState<Item>>,
 ): ComboboxState<Item> {
   return {
-    isOpen: false,
-    highlightedIndex: -1,
-    selectedItem: null,
-    inputValue: '',
-    ...removeUndefined(state),
+    isOpen: state.isOpen ?? false,
+    highlightedIndex: state.highlightedIndex ?? -1,
+    selectedItem: state.selectedItem ?? null,
+    inputValue: state.inputValue ?? '',
   };
 }
 
-export function createComboboxReducer<Item>(
+export function comboboxReducer<Item>(
   items: Item[],
   itemToString: (item: Item | null) => string,
+  state: ComboboxState<Item>,
+  action: ComboboxAction,
 ) {
-  return function (
-    state: ComboboxState<Item>,
-    action: ComboboxAction,
-  ): ComboboxState<Item> {
-    const { isOpen, highlightedIndex } = state;
-    const next = { ...state };
+  const { isOpen, highlightedIndex } = state;
+  const next = { ...state };
 
-    const selectItem = (item: Item | null) => {
-      next.selectedItem = item;
-      next.inputValue = itemToString(next.selectedItem);
-    };
+  const selectItem = (item: Item | null) => {
+    next.selectedItem = item;
+    next.inputValue = itemToString(next.selectedItem);
+  };
 
-    const selectHighlightedItem = () => {
-      selectItem(items[highlightedIndex] ?? null);
-    };
+  const selectHighlightedItem = () => {
+    selectItem(items[highlightedIndex] ?? null);
+  };
 
-    if (action.type === 'input-click') {
-      next.isOpen = !isOpen;
+  if (action.type === 'input-click') {
+    next.isOpen = !isOpen;
+  }
+
+  if (action.type === 'input-key-down') {
+    if (action.key === 'ArrowDown' || action.key === 'ArrowUp') {
+      next.isOpen = true;
     }
 
-    if (action.type === 'input-key-down') {
-      if (action.key === 'ArrowDown' || action.key === 'ArrowUp') {
-        next.isOpen = true;
-      }
+    if (action.key === 'ArrowDown') {
+      next.highlightedIndex += 1;
+      next.highlightedIndex %= items.length;
+    }
 
-      if (action.key === 'ArrowDown') {
-        next.highlightedIndex += 1;
-        next.highlightedIndex %= items.length;
-      }
+    if (action.key === 'ArrowUp') {
+      next.highlightedIndex -= 1;
 
-      if (action.key === 'ArrowUp') {
-        next.highlightedIndex -= 1;
-
-        if (next.highlightedIndex < 0) {
-          next.highlightedIndex = items.length - 1;
-        }
-      }
-
-      if (action.key === 'Enter') {
-        next.isOpen = false;
-        selectHighlightedItem();
-      }
-
-      if (action.key === 'Escape') {
-        next.isOpen = false;
+      if (next.highlightedIndex < 0) {
+        next.highlightedIndex = items.length - 1;
       }
     }
 
-    if (action.type === 'input-blur') {
+    if (action.key === 'Enter') {
       next.isOpen = false;
       selectHighlightedItem();
     }
 
-    if (action.type === 'toggle-button-click') {
-      next.isOpen = !state.isOpen;
-    }
-
-    if (action.type === 'item-click') {
-      selectItem(items[action.index] ?? null);
-    }
-
-    if (action.type === 'menu-mouse-leave') {
-      next.highlightedIndex = -1;
-    }
-
-    if (action.type === 'item-mouse-move') {
-      next.highlightedIndex = action.index;
-    }
-
-    if (action.type === 'item-click' && action.index !== -1) {
+    if (action.key === 'Escape') {
       next.isOpen = false;
-      next.selectedItem = items[action.index] ?? null;
     }
+  }
 
-    if (!next.isOpen) {
-      next.highlightedIndex = -1;
-    }
+  if (action.type === 'input-blur') {
+    next.isOpen = false;
+    selectHighlightedItem();
+  }
 
-    if (action.type === 'is-open-changed') {
-      next.isOpen = action.isOpen;
-    }
+  if (action.type === 'toggle-button-click') {
+    next.isOpen = !state.isOpen;
+  }
 
-    if (action.type === 'highlighted-index-changed') {
-      next.highlightedIndex = action.index;
-    }
+  if (action.type === 'item-click') {
+    selectItem(items[action.index] ?? null);
+  }
 
-    if (action.type === 'selected-item-changed') {
-      selectItem(action.item as Item | null);
-    }
+  if (action.type === 'menu-mouse-leave') {
+    next.highlightedIndex = -1;
+  }
 
-    if (action.type === 'input-value-changed') {
-      next.inputValue = action.inputValue;
-    }
+  if (action.type === 'item-mouse-move') {
+    next.highlightedIndex = action.index;
+  }
 
-    return next;
-  };
+  if (action.type === 'item-click' && action.index !== -1) {
+    next.isOpen = false;
+    next.selectedItem = items[action.index] ?? null;
+  }
+
+  if (!next.isOpen) {
+    next.highlightedIndex = -1;
+  }
+
+  if (action.type === 'is-open-changed') {
+    next.isOpen = action.isOpen;
+  }
+
+  if (action.type === 'highlighted-index-changed') {
+    next.highlightedIndex = action.index;
+  }
+
+  if (action.type === 'selected-item-changed') {
+    selectItem(action.item as Item | null);
+  }
+
+  if (action.type === 'input-value-changed') {
+    next.inputValue = action.inputValue;
+  }
+
+  return next;
 }
 
 export type ComboboxLabelAttributes = {

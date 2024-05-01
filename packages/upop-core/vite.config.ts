@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [dts({ rollupTypes: true })],
   build: {
     outDir: 'lib',
+    sourcemap: true,
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'upop',
