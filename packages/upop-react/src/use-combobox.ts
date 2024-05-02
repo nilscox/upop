@@ -120,7 +120,8 @@ export function useCombobox<Item>(props: ComboboxProps<Item>) {
       ...getComboboxInputAttributes(id, state),
       onClick: () => dispatch(inputClick()),
       onBlur: () => dispatch(inputBlur()),
-      onKeyDown: ({ key }: React.KeyboardEvent) => dispatch(inputKeyDown(key)),
+      onKeyDown: (event: React.KeyboardEvent) =>
+        dispatch(inputKeyDown(event.nativeEvent)),
       onChange: (event: ChangeEvent<HTMLInputElement>) =>
         dispatch(inputValueChanged(event.target.value)),
     };

@@ -91,7 +91,8 @@ export function comboboxReducer<Item>(
       }
     }
 
-    if (action.key === 'Enter') {
+    if (action.key === 'Enter' && next.isOpen) {
+      action.preventDefault();
       next.isOpen = false;
       selectHighlightedItem();
     }

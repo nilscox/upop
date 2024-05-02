@@ -46,9 +46,13 @@ export const inputClick = createAction('input-click');
 
 export const inputBlur = createAction('input-blur');
 
-export const inputKeyDown = createAction('input-key-down', (key: string) => ({
-  key,
-}));
+export const inputKeyDown = createAction(
+  'input-key-down',
+  (event: KeyboardEvent) => ({
+    key: event.key,
+    preventDefault: event.preventDefault.bind(event),
+  }),
+);
 
 export const inputValueChanged = createAction(
   'input-value-changed',

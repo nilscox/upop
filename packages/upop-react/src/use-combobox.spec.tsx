@@ -1,7 +1,7 @@
-import { act } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as downshift from 'downshift';
+import { act } from 'react';
 import { Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as upop from './use-combobox';
@@ -124,6 +124,8 @@ class Test {
     inputValue: string;
   };
 
+  public submitEvent?: React.FormEvent;
+
   private Combobox = () => {
     // @ts-expect-error upop and downshift don't have the exact same api
     const result = this.useCombobox(this.props);
@@ -136,12 +138,12 @@ class Test {
     };
 
     return (
-      <>
+      <form onSubmit={(event) => (this.submitEvent = event)}>
         <label {...result.getLabelProps()} />
 
         <div>
           <input {...result.getInputProps()} />
-          <button {...result.getToggleButtonProps()} />
+          <button type="button" {...result.getToggleButtonProps()} />
         </div>
 
         <ul {...result.getMenuProps()}>
@@ -149,7 +151,7 @@ class Test {
             <li key={item.id} {...result.getItemProps({ item, index })} />
           ))}
         </ul>
-      </>
+      </form>
     );
   };
 }
@@ -230,6 +232,17 @@ function input(useCombobox: UseCombobox) {
       selectedItem: items[1],
       inputValue: 'two',
     });
+  });
+
+  it('prevents the default behavior of the enter key', async () => {
+    await act(() => test.user.keyboard('{ArrowDown}'));
+    await act(() => test.user.keyboard('{Enter}'));
+
+    expect(test.submitEvent).toBeUndefined();
+
+    await act(() => test.user.keyboard('{Enter}'));
+
+    expect(test.submitEvent).not.toBeUndefined();
   });
 
   it('selects the highlighted item on blur', async () => {

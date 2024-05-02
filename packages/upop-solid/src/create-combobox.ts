@@ -4,6 +4,7 @@ import {
   comboboxInitialState,
   comboboxReducer,
   controlPropHighlightedIndexChanged,
+  controlPropInputValueChanged,
   controlPropIsOpenChanged,
   controlPropSelectedItemChanged,
   getComboboxInputAttributes,
@@ -93,7 +94,7 @@ export function createCombobox<Item>(props: ComboboxProps<Item>) {
   });
 
   createControlProp(props.inputValue, (value) => {
-    dispatch(inputValueChanged(value));
+    dispatch(controlPropInputValueChanged(value));
   });
 
   const getLabelProps = () => {
@@ -128,7 +129,7 @@ export function createCombobox<Item>(props: ComboboxProps<Item>) {
       ...getComboboxInputAttributes(id, state),
       onClick: () => dispatch(inputClick()),
       onBlur: () => dispatch(inputBlur()),
-      onKeyDown: ({ key }: KeyboardEvent) => dispatch(inputKeyDown(key)),
+      onKeyDown: (event: KeyboardEvent) => dispatch(inputKeyDown(event)),
       onInput: (event: { target: HTMLInputElement }) =>
         dispatch(inputValueChanged(event.target.value)),
     };

@@ -4,6 +4,7 @@ import {
   comboboxInitialState,
   comboboxReducer,
   controlPropHighlightedIndexChanged,
+  controlPropInputValueChanged,
   controlPropIsOpenChanged,
   controlPropSelectedItemChanged,
   getComboboxInputAttributes,
@@ -97,7 +98,7 @@ export function useCombobox<Item>(props: ComboboxProps<Item>) {
   });
 
   useControlProp(inputValue, (value) => {
-    dispatch(inputValueChanged(value));
+    dispatch(controlPropInputValueChanged(value));
   });
 
   const getLabelProps = () => {
@@ -132,7 +133,7 @@ export function useCombobox<Item>(props: ComboboxProps<Item>) {
       ...getComboboxInputAttributes(id, state.value),
       onClick: () => dispatch(inputClick()),
       onBlur: () => dispatch(inputBlur()),
-      onKeydown: ({ key }: KeyboardEvent) => dispatch(inputKeyDown(key)),
+      onKeydown: (event: KeyboardEvent) => dispatch(inputKeyDown(event)),
       onInput: (event: { target: HTMLInputElement }) => {
         dispatch(inputValueChanged(event.target.value));
       },
