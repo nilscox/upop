@@ -3,22 +3,22 @@ import {
   ComboboxState,
   comboboxInitialState,
   comboboxReducer,
+  controlPropHighlightedIndexChanged,
+  controlPropIsOpenChanged,
+  controlPropSelectedItemChanged,
   getComboboxInputAttributes,
   getComboboxItemAttributes,
   getComboboxLabelAttributes,
   getComboboxMenuAttributes,
   getComboboxToggleButtonAttributes,
   handleComboboxSideEffects,
-  highlightedIndexChanged,
   inputBlur,
   inputClick,
   inputKeyDown,
   inputValueChanged,
-  isOpenChanged,
   itemClick,
   itemMouseMove,
   menuMouseLeave,
-  selectedItemChanged,
   toggleButtonClick,
 } from '@upop/core';
 import { createUniqueId, mergeProps } from 'solid-js';
@@ -29,7 +29,7 @@ import { createRefs } from './create-refs';
 
 type ComboboxProps<Item> = {
   id?: string;
-  items: Item[];
+  items: () => Item[];
   itemToString?: (item: Item | null) => string;
   isOpen?: () => boolean;
   onIsOpenChange?: (state: ComboboxState<Item>) => void;
@@ -48,18 +48,21 @@ export function createCombobox<Item>(props: ComboboxProps<Item>) {
   const [itemElements, captureItemElement] = createRefs<Item>();
 
   const [state, setState] = createStore(
-    comboboxInitialState({
-      isOpen: props.isOpen?.(),
-      selectedItem: props.selectedItem?.(),
-      highlightedIndex: props.highlightedIndex?.(),
-      inputValue: props.inputValue?.(),
-    }),
+    comboboxInitialState(
+      {
+        isOpen: props.isOpen?.(),
+        selectedItem: props.selectedItem?.(),
+        highlightedIndex: props.highlightedIndex?.(),
+        inputValue: props.inputValue?.(),
+      },
+      props.itemToString ?? String,
+    ),
   );
 
   const dispatch: ComboboxDispatch = (action) => {
     const prevState = { ...unwrap(state) };
     const nextState = comboboxReducer(
-      props.items,
+      props.items(),
       props.itemToString ?? String,
       prevState,
       action,
@@ -68,7 +71,7 @@ export function createCombobox<Item>(props: ComboboxProps<Item>) {
     setState(nextState);
 
     handleComboboxSideEffects(prevState, nextState, action, {
-      items: props.items,
+      items: props.items(),
       itemElements,
       onIsOpenChange: props.onIsOpenChange,
       onSelectedItemChange: props.onSelectedItemChange,
@@ -78,15 +81,15 @@ export function createCombobox<Item>(props: ComboboxProps<Item>) {
   };
 
   createControlProp(props.isOpen, (value) => {
-    dispatch(isOpenChanged(value));
+    dispatch(controlPropIsOpenChanged(value));
   });
 
   createControlProp(props.selectedItem, (value) => {
-    dispatch(selectedItemChanged(value));
+    dispatch(controlPropSelectedItemChanged(value));
   });
 
   createControlProp(props.highlightedIndex, (value) => {
-    dispatch(highlightedIndexChanged(value));
+    dispatch(controlPropHighlightedIndexChanged(value));
   });
 
   createControlProp(props.inputValue, (value) => {

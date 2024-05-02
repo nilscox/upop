@@ -3,22 +3,22 @@ import {
   ComboboxState,
   comboboxInitialState,
   comboboxReducer,
+  controlPropHighlightedIndexChanged,
+  controlPropIsOpenChanged,
+  controlPropSelectedItemChanged,
   getComboboxInputAttributes,
   getComboboxItemAttributes,
   getComboboxLabelAttributes,
   getComboboxMenuAttributes,
   getComboboxToggleButtonAttributes,
   handleComboboxSideEffects,
-  highlightedIndexChanged,
   inputBlur,
   inputClick,
   inputKeyDown,
   inputValueChanged,
-  isOpenChanged,
   itemClick,
   itemMouseMove,
   menuMouseLeave,
-  selectedItemChanged,
   toggleButtonClick,
 } from '@upop/core';
 import { Ref, computed, shallowRef, toValue } from 'vue';
@@ -57,12 +57,15 @@ export function useCombobox<Item>(props: ComboboxProps<Item>) {
   const [itemElements, captureItemElement] = useRefs<Item>();
 
   const state = shallowRef(
-    comboboxInitialState<Item>({
-      isOpen: isOpen?.value,
-      selectedItem: selectedItem?.value,
-      highlightedIndex: highlightedIndex?.value,
-      inputValue: inputValue?.value,
-    }),
+    comboboxInitialState<Item>(
+      {
+        isOpen: isOpen?.value,
+        selectedItem: selectedItem?.value,
+        highlightedIndex: highlightedIndex?.value,
+        inputValue: inputValue?.value,
+      },
+      itemToString,
+    ),
   );
 
   const dispatch: ComboboxDispatch = (action) => {
@@ -82,15 +85,15 @@ export function useCombobox<Item>(props: ComboboxProps<Item>) {
   };
 
   useControlProp(isOpen, (value) => {
-    dispatch(isOpenChanged(value));
+    dispatch(controlPropIsOpenChanged(value));
   });
 
   useControlProp(selectedItem, (value) => {
-    dispatch(selectedItemChanged(value));
+    dispatch(controlPropSelectedItemChanged(value));
   });
 
   useControlProp(highlightedIndex, (value) => {
-    dispatch(highlightedIndexChanged(value));
+    dispatch(controlPropHighlightedIndexChanged(value));
   });
 
   useControlProp(inputValue, (value) => {

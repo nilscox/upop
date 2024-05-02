@@ -7,16 +7,16 @@ import {
   getSelectMenuAttributes,
   getSelectToggleButtonAttributes,
   handleSelectSideEffects,
-  highlightedIndexChanged,
-  isOpenChanged,
   itemClick,
   itemMouseMove,
   menuMouseLeave,
   selectInitialState,
-  selectedItemChanged,
   toggleButtonBlur,
   toggleButtonClick,
   toggleButtonKeyDown,
+  controlPropIsOpenChanged,
+  controlPropSelectedItemChanged,
+  controlPropHighlightedIndexChanged,
 } from '@upop/core';
 import { createUniqueId, mergeProps } from 'solid-js';
 import { createStore, unwrap } from 'solid-js/store';
@@ -66,15 +66,15 @@ export function createSelect<Item>(props: SelectProps<Item>) {
   };
 
   createControlProp(props.isOpen, (value) => {
-    dispatch(isOpenChanged(value));
+    dispatch(controlPropIsOpenChanged(value));
   });
 
   createControlProp(props.selectedItem, (value) => {
-    dispatch(selectedItemChanged(value));
+    dispatch(controlPropSelectedItemChanged(value));
   });
 
   createControlProp(props.highlightedIndex, (value) => {
-    dispatch(highlightedIndexChanged(value));
+    dispatch(controlPropHighlightedIndexChanged(value));
   });
 
   const getLabelProps = () => {

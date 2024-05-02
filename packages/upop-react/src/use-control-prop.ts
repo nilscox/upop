@@ -7,7 +7,7 @@ export function useControlProp<T>(
   const prev = useRef(value);
 
   useEffect(() => {
-    if (value !== undefined && value !== prev) {
+    if (value !== undefined && value !== prev.current) {
       onChange(value);
     }
   }, [value]);

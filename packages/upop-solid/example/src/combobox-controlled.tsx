@@ -12,7 +12,7 @@ export function ComboboxControlled() {
   const [inputValue, setInputValue] = createSignal('');
 
   const combobox = createCombobox({
-    items,
+    items: () => items,
     itemToString,
     isOpen,
     onIsOpenChange: ({ isOpen }) => {

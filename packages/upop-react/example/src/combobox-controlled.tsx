@@ -112,9 +112,10 @@ export function ComboboxControlled() {
           </div>
         </div>
         <ul
-          className={`absolute w-72 bg-white mt-1 shadow-md max-h-80 overflow-scroll p-0 z-10 ${
-            !(isOpen && items.length) && 'hidden'
-          }`}
+          className={cx(
+            'absolute w-72 bg-white mt-1 shadow-md max-h-80 overflow-scroll p-0 z-10',
+            { hidden: !(isOpen && items.length) },
+          )}
           {...getMenuProps()}
         >
           {isOpen &&

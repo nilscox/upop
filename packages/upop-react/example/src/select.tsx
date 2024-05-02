@@ -30,9 +30,10 @@ export function Select() {
         </div>
       </div>
       <ul
-        className={`absolute w-72 bg-white mt-1 shadow-md max-h-80 overflow-scroll p-0 z-10 ${
-          !isOpen && 'hidden'
-        }`}
+        className={cx(
+          'absolute w-72 bg-white mt-1 shadow-md max-h-80 overflow-scroll p-0 z-10',
+          { hidden: !isOpen },
+        )}
         {...getMenuProps()}
       >
         {isOpen &&

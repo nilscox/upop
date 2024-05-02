@@ -1,19 +1,19 @@
 import {
   SelectAction,
   SelectState,
+  controlPropHighlightedIndexChanged,
+  controlPropIsOpenChanged,
+  controlPropSelectedItemChanged,
   getSelectItemAttributes,
   getSelectLabelAttributes,
   getSelectMenuAttributes,
   getSelectToggleButtonAttributes,
   handleSelectSideEffects,
-  highlightedIndexChanged,
-  isOpenChanged,
   itemClick,
   itemMouseMove,
   menuMouseLeave,
   selectInitialState,
   selectReducer,
-  selectedItemChanged,
   toggleButtonBlur,
   toggleButtonClick,
   toggleButtonKeyDown,
@@ -62,15 +62,15 @@ export function useSelect<Item>(props: SelectProps<Item>) {
   };
 
   useControlProp(isOpen, (value) => {
-    dispatch(isOpenChanged(value));
+    dispatch(controlPropIsOpenChanged(value));
   });
 
   useControlProp(selectedItem, (value) => {
-    dispatch(selectedItemChanged(value));
+    dispatch(controlPropSelectedItemChanged(value));
   });
 
   useControlProp(highlightedIndex, (value) => {
-    dispatch(highlightedIndexChanged(value));
+    dispatch(controlPropHighlightedIndexChanged(value));
   });
 
   const getLabelProps = useCallback(() => {

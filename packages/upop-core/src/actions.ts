@@ -1,18 +1,23 @@
 import { createAction } from './create-action';
 
-export const isOpenChanged = createAction(
-  'is-open-changed',
+export const controlPropIsOpenChanged = createAction(
+  'control-prop-is-open-changed',
   (isOpen: boolean) => ({ isOpen }),
 );
 
-export const selectedItemChanged = createAction(
-  'selected-item-changed',
+export const controlPropSelectedItemChanged = createAction(
+  'control-prop-selected-item-changed',
   <Item>(item: Item | null) => ({ item }),
 );
 
-export const highlightedIndexChanged = createAction(
-  'highlighted-index-changed',
+export const controlPropHighlightedIndexChanged = createAction(
+  'control-prop-highlighted-index-changed',
   (index: number) => ({ index }),
+);
+
+export const controlPropInputValueChanged = createAction(
+  'control-prop-input-value-changed',
+  (inputValue: string) => ({ inputValue }),
 );
 
 export const toggleButtonClick = createAction('toggle-button-click');

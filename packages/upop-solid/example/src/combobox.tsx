@@ -7,7 +7,7 @@ export function Combobox() {
   const [items, setItems] = createStore(books.slice());
 
   const combobox = createCombobox({
-    items,
+    items: () => items,
     itemToString,
     onInputValueChange({ inputValue }) {
       setItems(books.filter(getBooksFilter(inputValue)));

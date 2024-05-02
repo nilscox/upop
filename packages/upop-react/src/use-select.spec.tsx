@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
+import { act } from 'react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as downshift from 'downshift';
 import { Mock, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -82,7 +83,7 @@ class Test {
   }
 
   menuItem(index: number) {
-    return document.getElementById(`select-item-${index}`)!;
+    return document.getElementById(`select-item-${String(index)}`)!;
   }
 
   expectState(state: {

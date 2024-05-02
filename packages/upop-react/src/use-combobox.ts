@@ -3,30 +3,31 @@ import {
   ComboboxState,
   comboboxInitialState,
   comboboxReducer,
+  controlPropHighlightedIndexChanged,
+  controlPropInputValueChanged,
+  controlPropIsOpenChanged,
+  controlPropSelectedItemChanged,
   getComboboxInputAttributes,
   getComboboxItemAttributes,
   getComboboxLabelAttributes,
   getComboboxMenuAttributes,
   getComboboxToggleButtonAttributes,
   handleComboboxSideEffects,
-  highlightedIndexChanged,
   inputBlur,
   inputClick,
   inputKeyDown,
   inputValueChanged,
-  isOpenChanged,
   itemClick,
   itemMouseMove,
   menuMouseLeave,
-  selectedItemChanged,
   toggleButtonClick,
 } from '@upop/core';
 import { ChangeEvent, useCallback, useState } from 'react';
 
-import { SelectProps } from './use-select';
 import { useControlProp } from './use-control-prop';
 import { useId } from './use-id';
 import { useRefs } from './use-refs';
+import { SelectProps } from './use-select';
 
 type ComboboxProps<Item> = SelectProps<Item> & {
   inputValue?: string;
@@ -48,7 +49,9 @@ export function useCombobox<Item>(props: ComboboxProps<Item>) {
   const id = useId(props.id);
   const [itemElements, captureItemElement] = useRefs<Item>();
 
-  const [state, setState] = useState(comboboxInitialState<Item>(props));
+  const [state, setState] = useState(
+    comboboxInitialState<Item>(props, itemToString),
+  );
 
   const dispatch = (action: ComboboxAction) => {
     const prevState = state;
@@ -67,19 +70,19 @@ export function useCombobox<Item>(props: ComboboxProps<Item>) {
   };
 
   useControlProp(isOpen, (value) => {
-    dispatch(isOpenChanged(value));
+    dispatch(controlPropIsOpenChanged(value));
   });
 
   useControlProp(selectedItem, (value) => {
-    dispatch(selectedItemChanged(value));
+    dispatch(controlPropSelectedItemChanged(value));
   });
 
   useControlProp(highlightedIndex, (value) => {
-    dispatch(highlightedIndexChanged(value));
+    dispatch(controlPropHighlightedIndexChanged(value));
   });
 
   useControlProp(inputValue, (value) => {
-    dispatch(inputValueChanged(value));
+    dispatch(controlPropInputValueChanged(value));
   });
 
   const getLabelProps = useCallback(() => {

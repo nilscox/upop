@@ -1,15 +1,16 @@
 import {
-  highlightedIndexChanged,
+  controlPropInputValueChanged,
   inputBlur,
   inputClick,
   inputKeyDown,
   inputValueChanged,
-  isOpenChanged,
+  controlPropIsOpenChanged,
   itemClick,
   itemMouseMove,
   menuMouseLeave,
-  selectedItemChanged,
+  controlPropSelectedItemChanged,
   toggleButtonClick,
+  controlPropHighlightedIndexChanged,
 } from './actions';
 
 export type ComboboxState<Item> = {
@@ -20,9 +21,10 @@ export type ComboboxState<Item> = {
 };
 
 export type ComboboxAction = ReturnType<
-  | typeof isOpenChanged
-  | typeof selectedItemChanged
-  | typeof highlightedIndexChanged
+  | typeof controlPropIsOpenChanged
+  | typeof controlPropSelectedItemChanged
+  | typeof controlPropHighlightedIndexChanged
+  | typeof controlPropInputValueChanged
   | typeof toggleButtonClick
   | typeof menuMouseLeave
   | typeof itemClick
@@ -37,12 +39,13 @@ export type ComboboxDispatch = (action: ComboboxAction) => void;
 
 export function comboboxInitialState<Item>(
   state: Partial<ComboboxState<Item>>,
+  itemToString: (item: Item | null) => string,
 ): ComboboxState<Item> {
   return {
     isOpen: state.isOpen ?? false,
     highlightedIndex: state.highlightedIndex ?? -1,
     selectedItem: state.selectedItem ?? null,
-    inputValue: state.inputValue ?? '',
+    inputValue: state.inputValue ?? itemToString(state.selectedItem ?? null),
   };
 }
 
@@ -98,6 +101,11 @@ export function comboboxReducer<Item>(
     }
   }
 
+  if (action.type === 'input-value-changed') {
+    next.isOpen = true;
+    next.inputValue = action.inputValue;
+  }
+
   if (action.type === 'input-blur') {
     next.isOpen = false;
     selectHighlightedItem();
@@ -128,19 +136,19 @@ export function comboboxReducer<Item>(
     next.highlightedIndex = -1;
   }
 
-  if (action.type === 'is-open-changed') {
+  if (action.type === 'control-prop-is-open-changed') {
     next.isOpen = action.isOpen;
   }
 
-  if (action.type === 'highlighted-index-changed') {
+  if (action.type === 'control-prop-highlighted-index-changed') {
     next.highlightedIndex = action.index;
   }
 
-  if (action.type === 'selected-item-changed') {
+  if (action.type === 'control-prop-selected-item-changed') {
     selectItem(action.item as Item | null);
   }
 
-  if (action.type === 'input-value-changed') {
+  if (action.type === 'control-prop-input-value-changed') {
     next.inputValue = action.inputValue;
   }
 
@@ -183,7 +191,7 @@ export function getComboboxInputAttributes<Item>(
     autoComplete: 'off',
     value: inputValue,
     'aria-activedescendant':
-      highlightedIndex >= 0 ? `${id}-item-${highlightedIndex}` : '',
+      highlightedIndex >= 0 ? `${id}-item-${String(highlightedIndex)}` : '',
     'aria-autocomplete': 'list',
     'aria-controls': `${id}-menu`,
     'aria-expanded': isOpen,
@@ -237,7 +245,7 @@ export function getComboboxItemAttributes<Item>(
   state: ComboboxState<Item>,
 ): ComboboxItemAttributes {
   return {
-    id: `${id}-item-${index}`,
+    id: `${id}-item-${String(index)}`,
     role: 'option',
     'aria-disabled': false,
     'aria-selected': index === state.highlightedIndex,

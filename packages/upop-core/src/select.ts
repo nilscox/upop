@@ -1,10 +1,10 @@
 import {
-  highlightedIndexChanged,
-  isOpenChanged,
+  controlPropHighlightedIndexChanged,
+  controlPropIsOpenChanged,
+  controlPropSelectedItemChanged,
   itemClick,
   itemMouseMove,
   menuMouseLeave,
-  selectedItemChanged,
   toggleButtonBlur,
   toggleButtonClick,
   toggleButtonKeyDown,
@@ -17,9 +17,9 @@ export type SelectState<Item> = {
 };
 
 export type SelectAction = ReturnType<
-  | typeof isOpenChanged
-  | typeof selectedItemChanged
-  | typeof highlightedIndexChanged
+  | typeof controlPropIsOpenChanged
+  | typeof controlPropSelectedItemChanged
+  | typeof controlPropHighlightedIndexChanged
   | typeof toggleButtonClick
   | typeof toggleButtonKeyDown
   | typeof toggleButtonBlur
@@ -104,15 +104,15 @@ export function selectReducer<Item>(
     next.highlightedIndex = -1;
   }
 
-  if (action.type === 'is-open-changed') {
+  if (action.type === 'control-prop-is-open-changed') {
     next.isOpen = action.isOpen;
   }
 
-  if (action.type === 'selected-item-changed') {
+  if (action.type === 'control-prop-selected-item-changed') {
     next.selectedItem = action.item as Item | null;
   }
 
-  if (action.type === 'highlighted-index-changed') {
+  if (action.type === 'control-prop-highlighted-index-changed') {
     next.highlightedIndex = action.index;
   }
 
@@ -153,7 +153,7 @@ export function getSelectToggleButtonAttributes<Item>(
     tabIndex: 0,
     id: `${id}-toggle-button`,
     'aria-activedescendant':
-      highlightedIndex >= 0 ? `${id}-item-${highlightedIndex}` : '',
+      highlightedIndex >= 0 ? `${id}-item-${String(highlightedIndex)}` : '',
     'aria-controls': `${id}-menu`,
     'aria-expanded': isOpen,
     'aria-haspopup': 'listbox',
@@ -189,7 +189,7 @@ export function getSelectItemAttributes<Item>(
   state: SelectState<Item>,
 ): SelectItemAttributes {
   return {
-    id: `${id}-item-${index}`,
+    id: `${id}-item-${String(index)}`,
     role: 'option',
     'aria-disabled': false,
     'aria-selected': index === items.indexOf(state.selectedItem as Item),

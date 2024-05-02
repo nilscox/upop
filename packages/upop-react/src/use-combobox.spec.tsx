@@ -1,4 +1,5 @@
-import { act, render, screen } from '@testing-library/react';
+import { act } from 'react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as downshift from 'downshift';
 import { Mock, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -94,7 +95,7 @@ class Test {
   }
 
   menuItem(index: number) {
-    return document.getElementById(`combobox-item-${index}`)!;
+    return document.getElementById(`combobox-item-${String(index)}`)!;
   }
 
   expectState(state: {
@@ -179,6 +180,11 @@ function input(useCombobox: UseCombobox) {
   it('opens the popup with the up arrow key', async () => {
     await act(() => test.user.keyboard('{ArrowUp}'));
     test.expectState({ isOpen: true, highlightedIndex: 1 });
+  });
+
+  it('opens the popup on type', async () => {
+    await act(() => test.user.keyboard('a'));
+    test.expectState({ isOpen: true, inputValue: 'a' });
   });
 
   it('highlights the items with the down arrow key', async () => {
